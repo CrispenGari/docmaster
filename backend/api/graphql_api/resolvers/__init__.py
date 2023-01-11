@@ -40,9 +40,11 @@ class ConvertWordDocumentToPDFMutation(graphene.Mutation):
             _file_fom_client_save_path = os.path.join(sessionPath, file.name)
             default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
             docx2pdf.convert(_file_fom_client_save_path, os.path.join(sessionPath, saveName))
-            
             return ConvertWordDocumentToPDFMutation(
-                success = True
+                success = True,
+                response = ConvertWordDocToPDFType(
+                    url = f"http://127.0.0.1:3001/temp/files/doc2pdf/{sessionId}/{saveName.replace(' ', '%20')}"
+                )
             )
         except Exception as e:
             print(e)
