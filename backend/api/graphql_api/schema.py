@@ -4,6 +4,7 @@ from graphql_api.resolvers import *
 class Mutation(graphene.ObjectType):
     convertDocToPDF = ConvertWordDocumentToPDFMutation.Field()
     convertPDFToDocx = ConvertPDFToWordDocumentMutation.Field()
+    getPDFMetaData = GetPDFMetaDataMutation.Field()
 
 class Query(graphene.ObjectType):
     hello = graphene.String()
