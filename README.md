@@ -17,6 +17,7 @@ curl http://localhost:3001/graphql/ -F operations='{"query":"mutation ConvertDoc
 ### doc info
 
 ```shell
+mutation ConvertPDFToDoc($input: ConvertPDFToWordDocInputType!) {convertPDFToDocx(input: $input) {success error { message field } response{ url } } }
 
 ```
 

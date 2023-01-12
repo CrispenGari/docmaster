@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 import uuid
 import os
 import docx2pdf
+from pdf2docx import Converter
 
 cwd = os.getcwd()
 temp_path = os.path.join(cwd, 'temp')
@@ -21,8 +22,14 @@ class ConvertWordDocumentToPDFMutation(graphene.Mutation):
     
     def mutate(self, info, input, **kwargs):
         try:
-            saveName = input.saveName if input.saveName.split('.')[-1].lower() == "pdf" else input.saveName + '.pdf'
             file = input.file
+            if input.saveName:
+                # if the user does not give us a savename
+                saveName = input.saveName if input.saveName.split('.')[-1].lower() == "pdf" else input.saveName + '.pdf'
+            else:
+                # then we use a original document name
+                saveName = "".join(str(file.name).split('.')[:-1]) + ".pdf"
+                
             if "." + file.name.split('.')[-1].lower() not in word_exts:
                 return ConvertWordDocumentToPDFMutation(
                      success = False,
@@ -55,59 +62,60 @@ class ConvertWordDocumentToPDFMutation(graphene.Mutation):
                     message = 'Something went wrong during converting file to PDF.'
                 )
             )
-        # try:
-        #     ext = "."+str(input.image.filename).split('.')[-1]
-        #     if not ext in allowed_extensions:
-        #         return PredictSnakeMutation(
-        #             ok = False,
-        #             error = ErrorType(
-        #                 field = 'image',
-        #                 message = f'Only images with extensions ({", ".join(allowed_extensions)}) are allowed.'
-        #             )
-        #         )
-        #     image = input.image.read()
-        #     image = Image.open(io.BytesIO(image))
-        #     tensor = preprocess_img(image)
-        #     res = predict(ssi_model, tensor, device)
-        #     return PredictSnakeMutation(
-        #         ok = True,
-        #         prediction = PredictionType(
-        #             top_prediction = PredictedType(
-        #                 label= res.top_prediction.label,
-        #                 class_name= res.top_prediction.class_name,
-        #                 probability= res.top_prediction.probability,
-        #                 specie = SpecieType(
-        #                     id = res.top_prediction.specie.id,
-        #                     class_ = res.top_prediction.specie.class_,
-        #                     common_name = res.top_prediction.specie.common_name,
-        #                     specie_name = res.top_prediction.specie.specie_name
-        #                 )
-        #             ),
-        #             predictions = [
-        #                 PredictedType(
-        #                     label= pred.label,
-        #                     class_name= pred.class_name,
-        #                     probability= pred.probability,
-        #                     specie = SpecieType(
-        #                         id = pred.specie.id,
-        #                         class_ = pred.specie.class_,
-        #                         common_name = pred.specie.common_name,
-        #                         specie_name = pred.specie.specie_name
-        #                     ) 
-        #                 ) for pred in res.predictions
-        #             ]
-        #         )
-        #     )
-        # except Exception as e:
-        #     print(e)
-        #     return PredictSnakeMutation(
-        #         ok = False,
-        #         error = ErrorType(
-        #             field = 'server',
-        #             message = "Something went wrong on the server."
-        #         )
-        #     )
+       
+class ConvertPDFToWordDocumentMutation(graphene.Mutation):
+    class Arguments:
+        input = graphene.Argument(graphene.NonNull(ConvertPDFToWordDocInputType))
+    error = graphene.Field(ErrorType, required=False)
+    success = graphene.Boolean(required=True)
+    response = graphene.Field(ConvertPDFToWordDocType, required=False)
     
+    def mutate(self, info, input, **kwargs):
+        try:
+            file = input.file
+            if input.saveName:
+                # if the user does not give us a savename
+                saveName = input.saveName if input.saveName.split('.')[-1].lower() == "docx" else input.saveName + '.docx'
+            else:
+                # then we use a original document name
+                saveName = "".join(str(file.name).split('.')[:-1]) + ".docx"
+                
+            if "." + file.name.split('.')[-1].lower() != ".pdf":
+                return ConvertPDFToWordDocumentMutation(
+                     success = False,
+                     error = ErrorType(
+                         field = "extension",
+                         message = f"Document type not supported allowed extensions are ({', '.join(['.pdf'])})."
+                     )
+                )
+            
+            sessionId = str(uuid.uuid4())[:5]
+            sessionPath = os.path.join(temp_path, 'pdf2docx', sessionId)
+            if not os.path.exists(sessionPath):
+                os.makedirs(sessionPath)
+           
+            _file_fom_client_save_path = os.path.join(sessionPath, file.name)
+            default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
+            
+            cv = Converter(_file_fom_client_save_path)
+            cv.convert(os.path.join(sessionPath, saveName))      # all pages by default
+            cv.close()
+            
+            return ConvertPDFToWordDocumentMutation(
+                success = True,
+                response = ConvertWordDocToPDFType(
+                    url = f"http://127.0.0.1:3001/temp/files/pdf2docx/{sessionId}/{saveName.replace(' ', '%20')}"
+                )
+            )
+        except Exception as e:
+            print(e)
+            return ConvertPDFToWordDocumentMutation(
+                success = False,
+                error = ErrorType(
+                    field = 'server',
+                    message = 'Something went wrong during converting file to PDF.'
+                )
+            )
 
 class UploadFileMutation(graphene.Mutation):
     class Arguments:
