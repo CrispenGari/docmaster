@@ -1,0 +1,14 @@
+overwrite: true
+schema: "https://30b0-41-246-130-213.ngrok.io/graphql/"
+documents: "src/graphql/**/*.graphql"
+generates:
+  src/graphql/generated/graphql.tsx:
+    plugins:
+      - "typescript"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+      - "fragment-matcher"
+    config:
+      withHOC: false
+      withComponent: false
+      withHooks: true

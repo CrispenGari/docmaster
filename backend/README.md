@@ -11,4 +11,9 @@
 4. getting infomation about the document
    - https://pypdf2.readthedocs.io/en/stable/
 5. merging documents
+
    - https://pypdf2.readthedocs.io/en/stable/
+
+6. extracting text
+7. extracting images
+8. reduce pdf sizes

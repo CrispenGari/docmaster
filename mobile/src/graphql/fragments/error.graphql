@@ -1,0 +1,4 @@
+fragment ErrorFragment on ErrorType {
+  message
+  field
+}

@@ -26,3 +26,14 @@ mutation ConvertPDFToDoc($input: ConvertPDFToWordDocInputType!) {convertPDFToDoc
 ```shell
 
 ```
+
+colors
+
+```css
+* {
+  --main: #1a2f4b;
+  --main-secondary: #28475c;
+  --main-primary: #2f8886;
+  --main-tertiary: #84c69b;
+}
+```
