@@ -1,7 +1,7 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
-import { Landing, Home, FilePicker, Results } from "../../screens";
+import { Landing, Home, FilePicker, Results, PdfPreview } from "../../screens";
 import { COLORS, FONTS } from "../../constants";
 
 const Stack = createStackNavigator<AppParamList>();
@@ -29,6 +29,7 @@ const AppStack = () => {
       <Stack.Screen name="Home" component={Home} />
       <Stack.Screen name="FilePicker" component={FilePicker} />
       <Stack.Screen name="Results" component={Results} />
+      <Stack.Screen name="PdfPreview" component={PdfPreview} />
     </Stack.Navigator>
   );
 };

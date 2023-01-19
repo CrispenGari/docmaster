@@ -1,10 +1,10 @@
+import { View, Text } from "react-native";
 import React, { useLayoutEffect } from "react";
 import { AppNavProps } from "../../params";
-import { ScrollView } from "react-native";
+import { AppBackButton } from "../../components";
 import { COLORS } from "../../constants";
-import { AppBackButton, PdfMeta } from "../../components";
-
-const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
+import { WebView } from "react-native-webview";
+const PdfPreview: React.FunctionComponent<AppNavProps<"PdfPreview">> = ({
   navigation,
   route,
 }) => {
@@ -12,7 +12,7 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
     let mounted: boolean = true;
     if (mounted) {
       navigation.setOptions({
-        headerTitle: route.params.headerTitle,
+        headerTitle: route.params.fileName,
         headerLeft: ({ label }) => (
           <AppBackButton
             label={label as string}
@@ -26,16 +26,21 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
     };
   }, []);
   return (
-    <ScrollView
+    <View
       style={{
-        padding: 10,
         backgroundColor: COLORS.main_secondary,
         flex: 1,
       }}
     >
-      <PdfMeta params={route.params} navigation={navigation} />
-    </ScrollView>
+      <WebView
+        style={{
+          flex: 1,
+        }}
+        source={{ uri: route.params.uri }}
+        originWhitelist={["file://"]}
+      />
+    </View>
   );
 };
 
-export default FilePicker;
+export default PdfPreview;

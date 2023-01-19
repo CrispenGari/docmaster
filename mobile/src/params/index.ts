@@ -10,7 +10,15 @@ export type AppParamList = {
     service: ServicesType;
     headerTitle: string;
   };
-  Results: undefined;
+  Results: {
+    results: any;
+    service: ServicesType;
+    headerTitle: string;
+  };
+  PdfPreview: {
+    uri: string;
+    fileName: string;
+  };
 };
 
 export type AppNavProps<T extends keyof AppParamList> = {
