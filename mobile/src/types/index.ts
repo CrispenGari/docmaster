@@ -6,3 +6,5 @@ export interface ActionType<T> {
 export interface StateType {
   user: any;
 }
+
+export type ServicesType = "meta" | "compress" | "merge" | "2word" | "2pdf";
