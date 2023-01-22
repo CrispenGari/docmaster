@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, Alert, Button } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
-import { COLORS, FONTS } from "../../constants";
+import { COLORS, FONTS, serverBaseURL } from "../../constants";
 import Divider from "../Divider/Divider";
 import * as DocumentPicker from "expo-document-picker";
 import { ServicesType } from "../../types";
@@ -9,8 +9,10 @@ import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
 import { useConvertPdf2WordMutation } from "../../graphql/generated/graphql";
 import { generateRNFile } from "../../utils";
+import { AntDesign, Entypo } from "@expo/vector-icons";
+import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
-
+import IndeterminateProgress from "../LinearProgress/LinearProgress";
 interface Props {
   params: Readonly<{
     nFiles: number;
@@ -21,6 +23,7 @@ interface Props {
 }
 const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
   const [doc, setDoc] = useState<DocumentPicker.DocumentResult>();
+  const [progress, setProgress] = useState(0);
 
   const [convert, { loading, data }] = useConvertPdf2WordMutation({
     fetchPolicy: "network-only",
@@ -46,25 +49,37 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
     });
   };
 
-  console.log(JSON.stringify(data, null, 2));
-  React.useEffect(() => {
-    let mounted: boolean = true;
+  const share = async () => {
+    if (data?.convertPDFToDocx?.response) {
+      setProgress(0.01);
+      const downloadResumable = FileSystem.createDownloadResumable(
+        data.convertPDFToDocx.response.url.replace(
+          "http://127.0.0.1:3001",
+          serverBaseURL
+        ),
+        FileSystem.documentDirectory +
+          data.convertPDFToDocx.response?.url
+            ?.split("/")
+            [
+              data.convertPDFToDocx.response?.url?.split("/").length - 1
+            ].replace("%20", " "),
+        {},
+        ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
+          setProgress(totalBytesWritten / totalBytesExpectedToWrite)
+      );
 
-    if (mounted && !!data) {
-      if (data.convertPDFToDocx?.error) {
-        Alert;
-      } else {
-        // navigation.navigate("Results", {
-        //   results: JSON.stringify(data.convertPDFToDocx?.response),
-        //   service: "meta",
-        //   headerTitle: "PDF Meta Data",
-        // });
+      try {
+        const response = await downloadResumable.downloadAsync();
+        if (response) {
+          await Sharing.shareAsync(response.uri, {
+            dialogTitle: "Save PDF Document",
+          });
+        }
+      } catch (e) {
+        console.error(e);
       }
     }
-    return () => {
-      mounted = false;
-    };
-  }, [data]);
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -223,29 +238,103 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
           ) : null}
         </View>
       </View>
-      <Button
-        title="download"
-        onPress={async () => {
-          console.log("downloading....");
-          const downloadResumable = await FileSystem.createDownloadResumable(
-            "http://techslides.com/demos/sample-videos/small.mp4",
-            FileSystem.documentDirectory + "small.mp4",
-            {},
-            (downloadProgress) => {
-              console.log(
-                downloadProgress.totalBytesWritten /
-                  downloadProgress.totalBytesExpectedToWrite
-              );
-            }
-          );
-          try {
-            const result = await downloadResumable.downloadAsync();
-            console.log("Finished downloading to ", { result });
-          } catch (e) {
-            console.error(e);
-          }
-        }}
-      />
+      {data?.convertPDFToDocx?.success ? (
+        <View style={{ width: "100%" }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <AntDesign
+              name="checkcircle"
+              size={24}
+              color={COLORS.main_tertiary}
+            />
+            <Text
+              style={{
+                marginLeft: 10,
+                color: "white",
+                fontFamily: FONTS.regular,
+                fontSize: 16,
+              }}
+            >
+              Conversion Successful. Now you can share your document.
+            </Text>
+          </View>
+          <Text
+            style={{
+              marginLeft: 10,
+              color: "white",
+              fontFamily: FONTS.regular,
+              fontSize: 20,
+              marginVertical: 20,
+            }}
+          >{`File name: ${data.convertPDFToDocx.response?.url
+            ?.split("/")
+            [
+              data.convertPDFToDocx.response?.url?.split("/").length - 1
+            ].replace("%20", " ")}`}</Text>
+
+          {progress > 0 && progress < 1 ? (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginVertical: 10,
+              }}
+            >
+              <Text
+                style={{
+                  marginRight: 5,
+                  fontFamily: FONTS.regular,
+                  color: "white",
+                }}
+              >
+                {(progress * 100).toFixed(0) + "%"}
+              </Text>
+              <IndeterminateProgress color={COLORS.main_tertiary} width={500} />
+              <AntDesign
+                name="checkcircle"
+                size={16}
+                color={COLORS.main_tertiary}
+                style={{ marginLeft: 5 }}
+              />
+            </View>
+          ) : null}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{
+              backgroundColor: COLORS.main,
+              maxWidth: 300,
+              paddingVertical: 10,
+              alignItems: "center",
+              flex: 1,
+              marginLeft: 10,
+              borderRadius: 5,
+              flexDirection: "row",
+              justifyContent: "center",
+            }}
+            onPress={share}
+          >
+            <Entypo
+              name="creative-commons-share"
+              size={24}
+              color={COLORS.main_tertiary}
+            />
+            <Text
+              style={{
+                fontFamily: FONTS.regular,
+                fontSize: 16,
+                color: "white",
+                marginLeft: 10,
+              }}
+            >
+              SHARE
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
     </View>
   );
 };
