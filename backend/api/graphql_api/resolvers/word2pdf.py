@@ -6,7 +6,6 @@ from django.core.files.base import ContentFile
 import uuid
 import os
 import docx2pdf
-from pdf2docx import Converter
 
 cwd = os.getcwd()
 temp_path = os.path.join(cwd, 'temp')

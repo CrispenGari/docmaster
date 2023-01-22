@@ -87,7 +87,7 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
             title="PDF to Word Document"
             onPress={() => {
               navigation.navigate("FilePicker", {
-                headerTitle: "PDF Meta Data",
+                headerTitle: "PDF to Word Document",
                 nFiles: 1,
                 service: "2word",
               });
@@ -102,6 +102,13 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
               />
             }
             title="Word Document to PDF"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "Word Document to PDF Document",
+                nFiles: 1,
+                service: "2word",
+              });
+            }}
           />
         </ScrollView>
       </View>

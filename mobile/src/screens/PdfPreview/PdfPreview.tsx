@@ -1,4 +1,4 @@
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import React, { useLayoutEffect } from "react";
 import { AppNavProps } from "../../params";
 import { AppBackButton } from "../../components";

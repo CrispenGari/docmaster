@@ -7,12 +7,12 @@ import { ServicesType } from "../../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
-import { useConvertPdf2WordMutation } from "../../graphql/generated/graphql";
 import { generateRNFile } from "../../utils";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import IndeterminateProgress from "../LinearProgress/LinearProgress";
+import { useConvertWord2PdfMutation } from "../../graphql/generated/graphql";
 interface Props {
   params: Readonly<{
     nFiles: number;
@@ -21,15 +21,16 @@ interface Props {
   }>;
   navigation: StackNavigationProp<AppParamList, "FilePicker", undefined>;
 }
-const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
+const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
   const [doc, setDoc] = useState<DocumentPicker.DocumentResult>();
   const [progress, setProgress] = useState(0);
   const [previewURL, setPreviewURL] = useState<string>("");
-  const [convert, { loading, data }] = useConvertPdf2WordMutation({
+
+  const [convert, { loading, data }] = useConvertWord2PdfMutation({
     fetchPolicy: "network-only",
   });
 
-  const convertToWord = async () => {
+  const convertToPDF = async () => {
     if (!!!doc) return;
     if (doc.type === "cancel") return;
     const file = generateRNFile({
@@ -50,18 +51,18 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
   };
 
   const share = async () => {
-    if (data?.convertPDFToDocx?.response) {
+    if (data?.convertDocToPDF?.response) {
       setProgress(0.01);
       const downloadResumable = FileSystem.createDownloadResumable(
-        data.convertPDFToDocx.response.url.replace(
+        data?.convertDocToPDF.response.url.replace(
           "http://127.0.0.1:3001",
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data.convertPDFToDocx.response?.url
+          data?.convertDocToPDF.response?.url
             ?.split("/")
             [
-              data.convertPDFToDocx.response?.url?.split("/").length - 1
+              data?.convertDocToPDF.response?.url?.split("/").length - 1
             ].replace("%20", " "),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
@@ -108,7 +109,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
           letterSpacing: 1,
         }}
       >
-        PDF Document To Word
+        Word Document to PDF
       </Text>
       <Text
         style={{
@@ -118,9 +119,9 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
           color: "white",
         }}
       >
-        Convert a PDF document to Word Document.
+        Convert a your Word Document to PDF.
       </Text>
-      <Divider title="Convert to Word Document" />
+      <Divider title="Convert to PDF Document" />
       <View
         style={{
           justifyContent: "center",
@@ -192,7 +193,10 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
             onPress={async () => {
               const doc = await DocumentPicker.getDocumentAsync({
                 multiple: params.nFiles !== 1,
-                type: "application/pdf",
+                type: [
+                  "application/msword",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ],
                 copyToCacheDirectory: true,
               });
               if (doc.type === "cancel") {
@@ -208,7 +212,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 color: "white",
               }}
             >
-              {!!!doc ? "SELECT PDF" : "RE-SELECT PDF"}
+              {!!!doc ? "SELECT WORD DOCUMENT" : "RE-SELECT WORD DOCUMENT"}
             </Text>
           </TouchableOpacity>
 
@@ -224,7 +228,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 marginLeft: 10,
                 borderRadius: 5,
               }}
-              onPress={convertToWord}
+              onPress={convertToPDF}
             >
               <Text
                 style={{
@@ -233,13 +237,13 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                   color: "white",
                 }}
               >
-                CONVERT TO WORD
+                CONVERT TO PDF DOCUMENT
               </Text>
             </TouchableOpacity>
           ) : null}
         </View>
       </View>
-      {data?.convertPDFToDocx?.success ? (
+      {data?.convertDocToPDF?.success ? (
         <View style={{ width: "100%" }}>
           <View
             style={{
@@ -271,11 +275,12 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
               fontSize: 20,
               marginVertical: 20,
             }}
-          >{`File name: ${data.convertPDFToDocx.response?.url
+          >{`File name: ${data.convertDocToPDF.response?.url
             ?.split("/")
-            [
-              data.convertPDFToDocx.response?.url?.split("/").length - 1
-            ].replace("%20", " ")}`}</Text>
+            [data.convertDocToPDF.response?.url?.split("/").length - 1].replace(
+              "%20",
+              " "
+            )}`}</Text>
 
           {progress > 0 && progress < 1 ? (
             <View
@@ -305,6 +310,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
               ) : null}
             </View>
           ) : null}
+
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               activeOpacity={0.7}
@@ -378,4 +384,4 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
   );
 };
 
-export default PDF2Word;
+export default Word2PDF;

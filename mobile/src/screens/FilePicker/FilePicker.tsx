@@ -5,6 +5,7 @@ import { COLORS } from "../../constants";
 import { AppBackButton } from "../../components";
 import PdfMeta from "../../components/PdfMeta/PdfMeta";
 import PDF2Word from "../../components/PDF2Word/PDF2Word";
+import Word2PDF from "../../components/Word2PDF/Word2PDF";
 
 const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
   navigation,
@@ -27,6 +28,30 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
       mounted = false;
     };
   }, []);
+
+  const { service } = route.params;
+  if (service === "2pdf") {
+    return (
+      <Wrapper>
+        <Word2PDF params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "meta") {
+    return (
+      <Wrapper>
+        <PdfMeta params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "2word") {
+    return (
+      <Wrapper>
+        <PDF2Word params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+
   return (
     <ScrollView
       style={{
@@ -34,12 +59,21 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
         backgroundColor: COLORS.main_secondary,
         flex: 1,
       }}
-    >
-      {/* <PdfMeta params={route.params} navigation={navigation} />
-       */}
-      <PDF2Word params={route.params} navigation={navigation} />
-    </ScrollView>
+    ></ScrollView>
   );
 };
-
 export default FilePicker;
+
+const Wrapper: React.FunctionComponent<{ children: React.ReactNode }> = ({
+  children,
+}) => (
+  <ScrollView
+    style={{
+      padding: 10,
+      backgroundColor: COLORS.main_secondary,
+      flex: 1,
+    }}
+  >
+    {children}
+  </ScrollView>
+);
