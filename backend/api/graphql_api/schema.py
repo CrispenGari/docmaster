@@ -2,9 +2,10 @@ import graphene
 from graphql_api.resolvers import *
 
 class Mutation(graphene.ObjectType):
-    convertDocToPDF = ConvertWordDocumentToPDFMutation.Field()
-    convertPDFToDocx = ConvertPDFToWordDocumentMutation.Field()
-    getPDFMetaData = GetPDFMetaDataMutation.Field()
+    convertDocToPDF = ConvertWordDocumentToPDF.Field()
+    convertPDFToDocx = ConvertPDFToWordDocument.Field()
+    getPDFMetaData = GetPDFMetaData.Field()
+    deleteSession = DeleteSession.Field()
 
 class Query(graphene.ObjectType):
     hello = graphene.String()

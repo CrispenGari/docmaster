@@ -10,7 +10,7 @@ from pdf2docx import Converter
 cwd = os.getcwd()
 temp_path = os.path.join(cwd, 'temp')
 
-class ConvertPDFToWordDocumentMutation(graphene.Mutation):
+class ConvertPDFToWordDocument(graphene.Mutation):
     class Arguments:
         input = graphene.Argument(graphene.NonNull(ConvertPDFToWordDocInputType))
     error = graphene.Field(ErrorType, required=False)
@@ -28,7 +28,7 @@ class ConvertPDFToWordDocumentMutation(graphene.Mutation):
                 saveName = "".join(str(file.name).split('.')[:-1]) + ".docx"
                 
             if "." + file.name.split('.')[-1].lower() != ".pdf":
-                return ConvertPDFToWordDocumentMutation(
+                return ConvertPDFToWordDocument(
                      success = False,
                      error = ErrorType(
                          field = "extension",
@@ -48,7 +48,7 @@ class ConvertPDFToWordDocumentMutation(graphene.Mutation):
             cv.convert(os.path.join(sessionPath, saveName))      # all pages by default
             cv.close()
             
-            return ConvertPDFToWordDocumentMutation(
+            return ConvertPDFToWordDocument(
                 success = True,
                 response = ConvertWordDocToPDFType(
                     sessionId = sessionId,
@@ -58,7 +58,7 @@ class ConvertPDFToWordDocumentMutation(graphene.Mutation):
             )
         except Exception as e:
             print(e)
-            return ConvertPDFToWordDocumentMutation(
+            return ConvertPDFToWordDocument(
                 success = False,
                 error = ErrorType(
                     field = 'server',

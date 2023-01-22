@@ -12,7 +12,7 @@ cwd = os.getcwd()
 temp_path = os.path.join(cwd, 'temp')
 word_exts = [".docx", ".doc", ".dotx", ".docm", ".dot", ".dotm", '.dotx']
 
-class ConvertWordDocumentToPDFMutation(graphene.Mutation):
+class ConvertWordDocumentToPDF(graphene.Mutation):
     class Arguments:
         input = graphene.Argument(graphene.NonNull(ConvertWordDocToPDFInputType))
     error = graphene.Field(ErrorType, required=False)
@@ -30,7 +30,7 @@ class ConvertWordDocumentToPDFMutation(graphene.Mutation):
                 saveName = "".join(str(file.name).split('.')[:-1]) + ".pdf"
                 
             if "." + file.name.split('.')[-1].lower() not in word_exts:
-                return ConvertWordDocumentToPDFMutation(
+                return ConvertWordDocumentToPDF(
                      success = False,
                      error = ErrorType(
                          field = "extension",
@@ -46,7 +46,7 @@ class ConvertWordDocumentToPDFMutation(graphene.Mutation):
             _file_fom_client_save_path = os.path.join(sessionPath, file.name)
             default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
             docx2pdf.convert(_file_fom_client_save_path, os.path.join(sessionPath, saveName))
-            return ConvertWordDocumentToPDFMutation(
+            return ConvertWordDocumentToPDF(
                 success = True,
                 response = ConvertWordDocToPDFType(
                     sessionId = sessionId,
@@ -56,7 +56,7 @@ class ConvertWordDocumentToPDFMutation(graphene.Mutation):
             )
         except Exception as e:
             print(e)
-            return ConvertWordDocumentToPDFMutation(
+            return ConvertWordDocumentToPDF(
                 success = False,
                 error = ErrorType(
                     field = 'server',

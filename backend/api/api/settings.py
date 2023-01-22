@@ -17,7 +17,7 @@ DEBUG = True
 
 APPEND_SLASH = False
 
-ALLOWED_HOSTS = ['30b0-41-246-130-213.ngrok.io']
+ALLOWED_HOSTS = ['3fb3-41-246-130-59.ngrok.io']
 
 
 # Application definition
