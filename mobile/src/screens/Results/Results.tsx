@@ -1,8 +1,9 @@
-import { View, Text, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import React, { useLayoutEffect } from "react";
 import { AppNavProps } from "../../params";
-import { AppBackButton, PdfMetaResults } from "../../components";
+import { AppBackButton } from "../../components";
 import { COLORS } from "../../constants";
+import PdfMetaResults from "../../components/PdfMeta/PdfMetaResults";
 
 const Results: React.FunctionComponent<AppNavProps<"Results">> = ({
   navigation,
@@ -33,7 +34,10 @@ const Results: React.FunctionComponent<AppNavProps<"Results">> = ({
         flex: 1,
       }}
     >
-      <PdfMetaResults results={route.params.results} />
+      <PdfMetaResults
+        results={JSON.parse(route.params.results)}
+        navigation={navigation}
+      />
     </ScrollView>
   );
 };

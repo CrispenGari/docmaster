@@ -1,0 +1,14 @@
+mutation ConvertPDF2Word($input: ConvertPDFToWordDocInputType!) {
+  convertPDFToDocx(input: $input) {
+    error {
+      field
+      message
+    }
+    success
+    response {
+      url
+      sessionId
+      sessionType
+    }
+  }
+}

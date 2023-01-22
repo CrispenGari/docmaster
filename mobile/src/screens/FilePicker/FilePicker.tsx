@@ -2,7 +2,9 @@ import React, { useLayoutEffect } from "react";
 import { AppNavProps } from "../../params";
 import { ScrollView } from "react-native";
 import { COLORS } from "../../constants";
-import { AppBackButton, PdfMeta } from "../../components";
+import { AppBackButton } from "../../components";
+import PdfMeta from "../../components/PdfMeta/PdfMeta";
+import PDF2Word from "../../components/PDF2Word/PDF2Word";
 
 const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
   navigation,
@@ -33,7 +35,9 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
         flex: 1,
       }}
     >
-      <PdfMeta params={route.params} navigation={navigation} />
+      {/* <PdfMeta params={route.params} navigation={navigation} />
+       */}
+      <PDF2Word params={route.params} navigation={navigation} />
     </ScrollView>
   );
 };

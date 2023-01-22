@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert, Button } from "react-native";
 import React, { useState } from "react";
 import { COLORS, FONTS } from "../../constants";
 import Divider from "../Divider/Divider";
@@ -7,8 +7,9 @@ import { ServicesType } from "../../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
-import { useReadPdfMetaMutation } from "../../graphql/generated/graphql";
+import { useConvertPdf2WordMutation } from "../../graphql/generated/graphql";
 import { generateRNFile } from "../../utils";
+import * as FileSystem from "expo-file-system";
 
 interface Props {
   params: Readonly<{
@@ -18,29 +19,25 @@ interface Props {
   }>;
   navigation: StackNavigationProp<AppParamList, "FilePicker", undefined>;
 }
-const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
-  const [getMetaDataDocument, setGetMetaDataDocument] =
-    useState<DocumentPicker.DocumentResult>();
-  const [setMetaDataDocument, setSetGetMetaDataDocument] =
-    useState<DocumentPicker.DocumentResult>();
+const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
+  const [doc, setDoc] = useState<DocumentPicker.DocumentResult>();
 
-  const [_readMetaData, { loading: readMetaLoading, data: readMetaResults }] =
-    useReadPdfMetaMutation({
-      fetchPolicy: "network-only",
-    });
+  const [convert, { loading, data }] = useConvertPdf2WordMutation({
+    fetchPolicy: "network-only",
+  });
 
   const readMetaData = async () => {
-    if (!!!getMetaDataDocument) return;
-    if (getMetaDataDocument.type === "cancel") return;
+    if (!!!doc) return;
+    if (doc.type === "cancel") return;
     const file = generateRNFile({
-      mimeType: getMetaDataDocument.mimeType ?? "application/pdf",
-      name: getMetaDataDocument.name,
-      uri: getMetaDataDocument.uri,
+      mimeType: doc.mimeType ?? "application/pdf",
+      name: doc.name,
+      uri: doc.uri,
     });
     if (!file) {
       return;
     }
-    await _readMetaData({
+    await convert({
       variables: {
         input: {
           file,
@@ -49,28 +46,29 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
     });
   };
 
+  console.log(JSON.stringify(data, null, 2));
   React.useEffect(() => {
     let mounted: boolean = true;
 
-    if (mounted && !!readMetaResults) {
-      if (readMetaResults.getPDFMetaData?.error) {
+    if (mounted && !!data) {
+      if (data.convertPDFToDocx?.error) {
         Alert;
       } else {
-        navigation.navigate("Results", {
-          results: JSON.stringify(readMetaResults.getPDFMetaData?.response),
-          service: "meta",
-          headerTitle: "PDF Meta Data",
-        });
+        // navigation.navigate("Results", {
+        //   results: JSON.stringify(data.convertPDFToDocx?.response),
+        //   service: "meta",
+        //   headerTitle: "PDF Meta Data",
+        // });
       }
     }
     return () => {
       mounted = false;
     };
-  }, [readMetaResults]);
+  }, [data]);
 
   return (
     <View style={{ flex: 1 }}>
-      {readMetaLoading ? (
+      {loading ? (
         <View
           style={{
             position: "absolute",
@@ -94,7 +92,7 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
           letterSpacing: 1,
         }}
       >
-        PDF Meta Data
+        PDF Document To Word
       </Text>
       <Text
         style={{
@@ -104,9 +102,9 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
           color: "white",
         }}
       >
-        Getting PDF Meta Data or create your own Meta Data.
+        Convert a pdf document to Word Document.
       </Text>
-      <Divider title="Get Meta Data" />
+      <Divider title="Convert to Word Document" />
       <View
         style={{
           justifyContent: "center",
@@ -114,7 +112,7 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
           marginBottom: 10,
         }}
       >
-        {!!getMetaDataDocument ? (
+        {!!doc ? (
           <View
             style={{
               flexDirection: "row",
@@ -131,7 +129,7 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 color: "white",
               }}
             >
-              {(getMetaDataDocument as any)?.name}
+              {(doc as any)?.name}
             </Text>
             <TouchableOpacity
               activeOpacity={0.7}
@@ -143,10 +141,10 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 alignItems: "center",
               }}
               onPress={() => {
-                if (getMetaDataDocument.type === "cancel") return;
+                if (doc.type === "cancel") return;
                 navigation.navigate("PdfPreview", {
-                  uri: getMetaDataDocument.uri,
-                  fileName: getMetaDataDocument.name,
+                  uri: doc.uri,
+                  fileName: doc.name,
                 });
               }}
             >
@@ -184,7 +182,7 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
               if (doc.type === "cancel") {
                 return;
               }
-              setGetMetaDataDocument(doc);
+              setDoc(doc);
             }}
           >
             <Text
@@ -194,11 +192,11 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 color: "white",
               }}
             >
-              {!!!getMetaDataDocument ? "SELECT PDF" : "RE-SELECT PDF"}
+              {!!!doc ? "SELECT PDF" : "RE-SELECT PDF"}
             </Text>
           </TouchableOpacity>
 
-          {!!getMetaDataDocument ? (
+          {!!doc ? (
             <TouchableOpacity
               activeOpacity={0.7}
               style={{
@@ -219,97 +217,37 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
                   color: "white",
                 }}
               >
-                READ META DATA
+                CONVERT TO WORD
               </Text>
             </TouchableOpacity>
           ) : null}
         </View>
       </View>
-      <Divider title="Set Meta Data" />
-
-      <View
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          marginBottom: 10,
+      <Button
+        title="download"
+        onPress={async () => {
+          console.log("downloading....");
+          const downloadResumable = await FileSystem.createDownloadResumable(
+            "http://techslides.com/demos/sample-videos/small.mp4",
+            FileSystem.documentDirectory + "small.mp4",
+            {},
+            (downloadProgress) => {
+              console.log(
+                downloadProgress.totalBytesWritten /
+                  downloadProgress.totalBytesExpectedToWrite
+              );
+            }
+          );
+          try {
+            const result = await downloadResumable.downloadAsync();
+            console.log("Finished downloading to ", { result });
+          } catch (e) {
+            console.error(e);
+          }
         }}
-      >
-        {!!setMetaDataDocument ? (
-          <View
-            style={{
-              flexDirection: "row",
-              paddingVertical: 10,
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-between",
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: FONTS.regular,
-                fontSize: 16,
-                color: "white",
-              }}
-            >
-              Selected 3.pdf
-            </Text>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                marginLeft: 20,
-                backgroundColor: COLORS.main_tertiary,
-                width: 100,
-                paddingVertical: 10,
-                alignItems: "center",
-              }}
-              onPress={() => {
-                if (setMetaDataDocument.type === "cancel") return;
-                console.log({
-                  setMetaDataDocument,
-                });
-                navigation.navigate("PdfPreview", {
-                  uri: setMetaDataDocument.uri,
-                  fileName: setMetaDataDocument.name,
-                });
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: FONTS.regular,
-                  fontSize: 16,
-                  color: "white",
-                }}
-              >
-                PREVIEW
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={{
-            backgroundColor: COLORS.main_primary,
-            maxWidth: 300,
-            paddingVertical: 10,
-            alignItems: "center",
-            width: "100%",
-            borderRadius: 5,
-            marginTop: 10,
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: FONTS.regular,
-              fontSize: 16,
-              color: "white",
-            }}
-          >
-            SELECT PDF
-          </Text>
-        </TouchableOpacity>
-      </View>
+      />
     </View>
   );
 };
 
-export default PdfMeta;
+export default PDF2Word;

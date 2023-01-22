@@ -1,0 +1,8 @@
+mutation DeleteSession($input: DeleteSessionInputType!) {
+  deleteSession(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+  }
+}

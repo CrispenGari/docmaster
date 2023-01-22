@@ -85,6 +85,13 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
           <IconButton
             Icon={<Foundation name="page-export-pdf" size={30} color="white" />}
             title="PDF to Word Document"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "PDF Meta Data",
+                nFiles: 1,
+                service: "2word",
+              });
+            }}
           />
           <IconButton
             Icon={
