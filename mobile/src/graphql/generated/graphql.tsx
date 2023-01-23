@@ -84,12 +84,38 @@ export type GetPdfMetaDataInputType = {
   file: Scalars['Upload'];
 };
 
+export type MergePdfFilesInputType = {
+  pdfs: Array<MergePdfInputType>;
+  saveName: Scalars['String'];
+};
+
+export type MergePdfFilesMutation = {
+  __typename?: 'MergePDFFilesMutation';
+  error?: Maybe<ErrorType>;
+  response?: Maybe<MergePdfFilesType>;
+  success: Scalars['Boolean'];
+};
+
+export type MergePdfFilesType = {
+  __typename?: 'MergePDFFilesType';
+  documentName: Scalars['String'];
+  sessionId: Scalars['String'];
+  sessionType: Scalars['String'];
+  url: Scalars['String'];
+};
+
+export type MergePdfInputType = {
+  file: Scalars['Upload'];
+  pages: Array<InputMaybe<Scalars['Int']>>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   convertDocToPDF?: Maybe<ConvertWordDocumentToPdf>;
   convertPDFToDocx?: Maybe<ConvertPdfToWordDocument>;
   deleteSession?: Maybe<DeleteSession>;
   getPDFMetaData?: Maybe<GetPdfMetaData>;
+  mergePDFs?: Maybe<MergePdfFilesMutation>;
   reducePDFSize?: Maybe<ReducePdfSize>;
 };
 
@@ -111,6 +137,11 @@ export type MutationDeleteSessionArgs = {
 
 export type MutationGetPdfMetaDataArgs = {
   input: GetPdfMetaDataInputType;
+};
+
+
+export type MutationMergePdFsArgs = {
+  input: MergePdfFilesInputType;
 };
 
 
@@ -178,6 +209,13 @@ export type ReadPdfMetaMutationVariables = Exact<{
 
 
 export type ReadPdfMetaMutation = { __typename?: 'Mutation', getPDFMetaData?: { __typename?: 'GetPDFMetaData', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'PDFMetaDataType', sessionId: string, sessionType: string, documentName: string, pages?: number | null, author?: string | null, producer?: string | null, creator?: string | null, createdAt?: string | null, modifiedAt?: string | null, pageLayout?: string | null, pageLabels?: Array<number | null> | null, isLocked?: boolean | null, pdfHeader?: string | null, pageMode?: string | null } | null } | null };
+
+export type MergePdFsMutationVariables = Exact<{
+  input: MergePdfFilesInputType;
+}>;
+
+
+export type MergePdFsMutation = { __typename?: 'Mutation', mergePDFs?: { __typename?: 'MergePDFFilesMutation', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'MergePDFFilesType', sessionId: string, documentName: string, sessionType: string, url: string } | null } | null };
 
 export type ConvertPdf2WordMutationVariables = Exact<{
   input: ConvertPdfToWordDocInputType;
@@ -294,6 +332,48 @@ export function useReadPdfMetaMutation(baseOptions?: Apollo.MutationHookOptions<
 export type ReadPdfMetaMutationHookResult = ReturnType<typeof useReadPdfMetaMutation>;
 export type ReadPdfMetaMutationResult = Apollo.MutationResult<ReadPdfMetaMutation>;
 export type ReadPdfMetaMutationOptions = Apollo.BaseMutationOptions<ReadPdfMetaMutation, ReadPdfMetaMutationVariables>;
+export const MergePdFsDocument = gql`
+    mutation MergePDFs($input: MergePDFFilesInputType!) {
+  mergePDFs(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      sessionId
+      documentName
+      sessionType
+      url
+    }
+  }
+}
+    ${ErrorFragmentFragmentDoc}`;
+export type MergePdFsMutationFn = Apollo.MutationFunction<MergePdFsMutation, MergePdFsMutationVariables>;
+
+/**
+ * __useMergePdFsMutation__
+ *
+ * To run a mutation, you first call `useMergePdFsMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMergePdFsMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [mergePdFsMutation, { data, loading, error }] = useMergePdFsMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useMergePdFsMutation(baseOptions?: Apollo.MutationHookOptions<MergePdFsMutation, MergePdFsMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MergePdFsMutation, MergePdFsMutationVariables>(MergePdFsDocument, options);
+      }
+export type MergePdFsMutationHookResult = ReturnType<typeof useMergePdFsMutation>;
+export type MergePdFsMutationResult = Apollo.MutationResult<MergePdFsMutation>;
+export type MergePdFsMutationOptions = Apollo.BaseMutationOptions<MergePdFsMutation, MergePdFsMutationVariables>;
 export const ConvertPdf2WordDocument = gql`
     mutation ConvertPDF2Word($input: ConvertPDFToWordDocInputType!) {
   convertPDFToDocx(input: $input) {

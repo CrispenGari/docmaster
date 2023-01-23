@@ -1,4 +1,10 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  SafeAreaView,
+} from "react-native";
 import React, { useLayoutEffect } from "react";
 import { AppNavProps } from "../../params";
 import { COLORS, FONTS } from "../../constants";
@@ -125,6 +131,8 @@ const Landing: React.FunctionComponent<AppNavProps<"Landing">> = ({
             </Text>
           </TouchableOpacity>
         </Animatable.View>
+      </View>
+      <SafeAreaView style={{ width: "100%" }}>
         <Text
           style={{
             fontFamily: FONTS.regular,
@@ -139,7 +147,7 @@ const Landing: React.FunctionComponent<AppNavProps<"Landing">> = ({
           Copyright © {new Date().getFullYear()} docmaster Inc. All rights
           reserved.
         </Text>
-      </View>
+      </SafeAreaView>
     </View>
   );
 };

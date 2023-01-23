@@ -1,12 +1,13 @@
-import { ScrollView, View, Image } from "react-native";
+import { ScrollView, View, Image, SafeAreaView, Text } from "react-native";
 import React from "react";
 import { AppNavProps } from "../../params";
-import { COLORS } from "../../constants";
+import { COLORS, FONTS } from "../../constants";
 import {
   AntDesign,
   Entypo,
   Foundation,
   MaterialCommunityIcons,
+  MaterialIcons,
 } from "@expo/vector-icons";
 import { Divider, IconButton } from "../../components";
 import { useLayoutEffect } from "react";
@@ -50,6 +51,7 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
       style={{
         padding: 10,
         backgroundColor: COLORS.main_secondary,
+        position: "relative",
       }}
     >
       <Divider title="BASICS" />
@@ -70,6 +72,26 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
                 service: "meta",
               });
             }}
+          />
+          <IconButton
+            Icon={
+              <MaterialIcons
+                name="panorama-photosphere"
+                size={30}
+                color="white"
+              />
+            }
+            title="PDF Annotations"
+          />
+          <IconButton
+            Icon={
+              <MaterialCommunityIcons
+                name="watermark"
+                size={30}
+                color="white"
+              />
+            }
+            title="PDF Watermarks"
           />
         </ScrollView>
       </View>
@@ -152,6 +174,83 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
           />
         </ScrollView>
       </View>
+
+      <Divider title="COMPILING" />
+      <View style={{ width: "100%", marginBottom: 10 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <IconButton
+            Icon={<Entypo name="merge" size={30} color="white" />}
+            title="Merge PDFs"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "Merge PDFs",
+                nFiles: 1,
+                service: "merge",
+              });
+            }}
+          />
+        </ScrollView>
+      </View>
+      <Divider title={"Encryption and Decryption".toUpperCase()} />
+      <View style={{ width: "100%", marginBottom: 10 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <IconButton
+            Icon={
+              <MaterialCommunityIcons
+                name="archive-lock"
+                size={30}
+                color="white"
+              />
+            }
+            title="Encrypt PDF Document"
+          />
+          <IconButton
+            Icon={
+              <MaterialCommunityIcons
+                name="archive-lock-open"
+                size={30}
+                color="white"
+              />
+            }
+            title="Decrypt PDF Document"
+          />
+        </ScrollView>
+      </View>
+      <View style={{ height: 50 }} />
+
+      <SafeAreaView
+        style={{
+          width: "100%",
+          position: "absolute",
+          bottom: 0,
+          marginBottom: 20,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: FONTS.regular,
+            color: "white",
+            marginTop: 20,
+            width: "100%",
+            textAlign: "center",
+            position: "absolute",
+            bottom: 0,
+          }}
+        >
+          Copyright © {new Date().getFullYear()} docmaster Inc. All rights
+          reserved.
+        </Text>
+      </SafeAreaView>
     </ScrollView>
   );
 };

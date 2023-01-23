@@ -7,6 +7,7 @@ import PdfMeta from "../../components/PdfMeta/PdfMeta";
 import PDF2Word from "../../components/PDF2Word/PDF2Word";
 import Word2PDF from "../../components/Word2PDF/Word2PDF";
 import PDFSize from "../../components/PDFSize/PDFSize";
+import PDFMerge from "../../components/PDFMerge/PDFMerge";
 
 const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
   navigation,
@@ -56,6 +57,13 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
     return (
       <Wrapper>
         <PDFSize params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "merge") {
+    return (
+      <Wrapper>
+        <PDFMerge params={route.params} navigation={navigation} />
       </Wrapper>
     );
   }

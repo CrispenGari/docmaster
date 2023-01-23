@@ -7,12 +7,16 @@ import { ServicesType } from "../../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
+import { useMergePdFsMutation } from "../../graphql/generated/graphql";
 import { generateRNFile } from "../../utils";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import IndeterminateProgress from "../LinearProgress/LinearProgress";
-import { useConvertWord2PdfMutation } from "../../graphql/generated/graphql";
+import { ScrollView } from "react-native-gesture-handler";
+import AddPDFButton from "../AddPDFButton/AddPDFButton";
+import CustomTextInput from "../CustomTextInput/CustomTextInput";
+import SelectedPDF from "../SelectedPDF/SelectedPDF";
 interface Props {
   params: Readonly<{
     nFiles: number;
@@ -21,45 +25,88 @@ interface Props {
   }>;
   navigation: StackNavigationProp<AppParamList, "FilePicker", undefined>;
 }
-const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
-  const [doc, setDoc] = useState<DocumentPicker.DocumentResult>();
+const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
+  const [documentsToMerge, setDocumentsToMerge] = useState<
+    Array<{
+      doc: {
+        name: string;
+        size?: number | undefined;
+        uri: string;
+        mimeType?: string | undefined;
+      };
+      pages: Array<number>;
+      id: number;
+    }>
+  >([]);
   const [progress, setProgress] = useState(0);
   const [previewURL, setPreviewURL] = useState<string>("");
-
-  const [convert, { loading, data }] = useConvertWord2PdfMutation({
+  const [outputName, setOutputName] = useState<string>("");
+  const [merge, { loading, data }] = useMergePdFsMutation({
     fetchPolicy: "network-only",
   });
 
-  const convertToPDF = async () => {
-    if (!!!doc) return;
-    if (doc.type === "cancel") return;
-    const file = generateRNFile({
-      mimeType: doc.mimeType ?? "application/pdf",
-      name: doc.name,
-      uri: doc.uri,
+  const addPDFToStack = async () => {
+    const doc = await DocumentPicker.getDocumentAsync({
+      multiple: params.nFiles !== 1,
+      type: "application/pdf",
+      copyToCacheDirectory: true,
     });
-    if (!file) {
+    if (doc.type === "cancel") {
       return;
     }
-    await convert({
+    setDocumentsToMerge((state) => [
+      ...state,
+      {
+        doc: {
+          name: doc.name,
+          size: doc.size,
+          uri: doc.uri,
+          mimeType: doc.mimeType,
+        },
+        pages: [],
+        id: documentsToMerge.length,
+      },
+    ]);
+  };
+
+  console.log(JSON.stringify(documentsToMerge, null, 2));
+
+  const mergePDFs = async () => {
+    // if (!!!doc) return;
+    // if (doc.type === "cancel") return;
+
+    if (documentsToMerge.length === 0) {
+      return;
+    }
+    await merge({
       variables: {
         input: {
-          file,
+          pdfs: [
+            ...documentsToMerge.map(({ doc, pages }) => ({
+              file: generateRNFile({
+                mimeType: doc.mimeType ?? "application/pdf",
+                name: doc.name,
+                uri: doc.uri,
+              }),
+              pages: pages,
+            })),
+          ],
+          saveName: outputName,
         },
       },
     });
   };
 
   const share = async () => {
-    if (data?.convertDocToPDF?.response) {
+    if (data?.mergePDFs?.response) {
       setProgress(0.01);
       const downloadResumable = FileSystem.createDownloadResumable(
-        data?.convertDocToPDF.response.url.replace(
+        data.mergePDFs.response.url.replace(
           "http://127.0.0.1:3001",
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data?.convertDocToPDF.response?.documentName.replace("%20", " "),
+          data.mergePDFs.response?.documentName.replace("%20", " "),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
           setProgress(totalBytesWritten / totalBytesExpectedToWrite)
@@ -69,7 +116,7 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
         const response = await downloadResumable.downloadAsync();
         if (response) {
           await Sharing.shareAsync(response.uri, {
-            dialogTitle: "Save Word Document",
+            dialogTitle: "Save PDF Document",
           });
           setPreviewURL(response.uri);
         }
@@ -105,7 +152,7 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
           letterSpacing: 1,
         }}
       >
-        Word Document to PDF
+        Merge PDF Documents
       </Text>
       <Text
         style={{
@@ -115,131 +162,94 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
           color: "white",
         }}
       >
-        Convert a your Word Document to PDF.
+        Merge at least 2 PDF Documents.
       </Text>
-      <Divider title="Convert to PDF Document" />
-      <View
+      <Divider title="Merge PDF Documents" />
+
+      <ScrollView
+        style={{}}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {documentsToMerge.map((doc, index) => (
+          <SelectedPDF
+            key={doc.id}
+            doc={doc}
+            documentNumber={doc.id}
+            onRemoveButtonPress={() => {
+              setDocumentsToMerge((state) =>
+                state.filter((doc) => doc.id !== index)
+              );
+            }}
+            onPress={() => {
+              navigation.navigate("PdfPreview", {
+                fileName: doc.doc.name,
+                uri: doc.doc.uri,
+              });
+            }}
+            setDocumentsToMerge={setDocumentsToMerge}
+          />
+        ))}
+        {/* only 5 documents */}
+        <AddPDFButton
+          onPress={addPDFToStack}
+          disabled={documentsToMerge.length === 5}
+        />
+      </ScrollView>
+      <Text
         style={{
-          justifyContent: "center",
-          alignItems: "center",
-          marginBottom: 10,
+          color: "white",
+          marginVertical: 10,
+          fontFamily: FONTS.regular,
         }}
       >
-        {!!doc ? (
-          <View
-            style={{
-              flexDirection: "row",
-              paddingVertical: 10,
-              alignItems: "center",
-              width: "100%",
-              justifyContent: "space-between",
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: FONTS.regular,
-                fontSize: 16,
-                color: "white",
-              }}
-            >
-              {(doc as any)?.name}
-            </Text>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                marginLeft: 20,
-                backgroundColor: COLORS.main_tertiary,
-                width: 100,
-                paddingVertical: 10,
-                alignItems: "center",
-              }}
-              onPress={() => {
-                if (doc.type === "cancel") return;
-                navigation.navigate("PdfPreview", {
-                  uri: doc.uri,
-                  fileName: doc.name,
-                });
-              }}
-            >
-              <Text
-                style={{
-                  fontFamily: FONTS.regular,
-                  fontSize: 16,
-                  color: "white",
-                }}
-              >
-                PREVIEW
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
-        <View
-          style={{ width: "100%", flexDirection: "row", marginVertical: 30 }}
-        >
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={{
-              backgroundColor: COLORS.main_primary,
-              maxWidth: 300,
-              paddingVertical: 10,
-              alignItems: "center",
-              flex: 1,
-              borderRadius: 5,
-            }}
-            onPress={async () => {
-              const doc = await DocumentPicker.getDocumentAsync({
-                multiple: params.nFiles !== 1,
-                type: [
-                  "application/msword",
-                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                ],
-                copyToCacheDirectory: true,
-              });
-              if (doc.type === "cancel") {
-                return;
-              }
-              setDoc(doc);
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: FONTS.regular,
-                fontSize: 16,
-                color: "white",
-              }}
-            >
-              {!!!doc ? "SELECT WORD DOCUMENT" : "RE-SELECT WORD DOCUMENT"}
-            </Text>
-          </TouchableOpacity>
+        Note: "These documents will be merged based on the order of selection,
+        as they are numbered from 1-N".
+      </Text>
+      <CustomTextInput
+        leftIcon={
+          <MaterialIcons
+            name="drive-file-rename-outline"
+            size={24}
+            color={COLORS.main_primary}
+          />
+        }
+        containerStyles={{
+          marginTop: 10,
+          maxWidth: 500,
+        }}
+        text={outputName}
+        onChangeText={(text) => setOutputName(text)}
+        placeholder="Enter output name (eg. output.pdf)"
+      />
 
-          {!!doc ? (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                backgroundColor: COLORS.main,
-                maxWidth: 300,
-                paddingVertical: 10,
-                alignItems: "center",
-                flex: 1,
-                marginLeft: 10,
-                borderRadius: 5,
-              }}
-              onPress={convertToPDF}
-            >
-              <Text
-                style={{
-                  fontFamily: FONTS.regular,
-                  fontSize: 16,
-                  color: "white",
-                }}
-              >
-                CONVERT TO PDF DOCUMENT
-              </Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </View>
-      {data?.convertDocToPDF?.success ? (
+      {documentsToMerge.length > 1 ? (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={{
+            backgroundColor: COLORS.main,
+            maxWidth: 300,
+            paddingVertical: 10,
+            alignItems: "center",
+            flex: 1,
+            borderRadius: 5,
+            marginTop: 10,
+          }}
+          onPress={mergePDFs}
+        >
+          <Text
+            style={{
+              fontFamily: FONTS.regular,
+              fontSize: 16,
+              color: "white",
+            }}
+          >
+            MERGE {`'${documentsToMerge.length}'`} PDFs
+          </Text>
+        </TouchableOpacity>
+      ) : null}
+      {data?.mergePDFs?.success ? (
         <View style={{ width: "100%" }}>
           <View
             style={{
@@ -271,7 +281,7 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
               fontSize: 20,
               marginVertical: 20,
             }}
-          >{`File name: ${data.convertDocToPDF.response?.documentName.replace(
+          >{`File name: ${data.mergePDFs.response?.documentName.replace(
             "%20",
             " "
           )}`}</Text>
@@ -304,7 +314,6 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
               ) : null}
             </View>
           ) : null}
-
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               activeOpacity={0.7}
@@ -351,11 +360,10 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 onPress={() => {
                   navigation.navigate("PdfPreview", {
                     uri: previewURL,
-                    fileName:
-                      data.convertDocToPDF?.response?.documentName.replace(
-                        "%20",
-                        " "
-                      ) as any,
+                    fileName: data.mergePDFs?.response?.documentName.replace(
+                      "%20",
+                      " "
+                    ) as any,
                   });
                 }}
               >
@@ -377,4 +385,4 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
   );
 };
 
-export default Word2PDF;
+export default PDFMerge;

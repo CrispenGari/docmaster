@@ -1,0 +1,14 @@
+mutation MergePDFs($input: MergePDFFilesInputType!) {
+  mergePDFs(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      sessionId
+      documentName
+      sessionType
+      url
+    }
+  }
+}
