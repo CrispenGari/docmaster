@@ -1,5 +1,5 @@
-mutation ConvertWord2PDF($input: ConvertWordDocToPDFInputType!) {
-  convertDocToPDF(input: $input) {
+mutation ReducePDFSize($input: ReducePDFSizeInputType!) {
+  reducePDFSize(input: $input) {
     error {
       ...ErrorFragment
     }
@@ -9,6 +9,8 @@ mutation ConvertWord2PDF($input: ConvertWordDocToPDFInputType!) {
       sessionId
       sessionType
       documentName
+      inputSize
+      outputSize
     }
   }
 }

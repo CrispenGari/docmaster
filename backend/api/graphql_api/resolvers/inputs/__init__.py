@@ -9,6 +9,9 @@ class ConvertPDFToWordDocInputType(graphene.InputObjectType):
     file = Upload(required=True)
     saveName = graphene.String(required = False)
     
+class ReducePDFSizeInputType(graphene.InputObjectType):
+    file = Upload(required=True)
+    saveName = graphene.String(required = False)
     
 class GetPDFMetaDataInputType(graphene.InputObjectType):
     file = Upload(required=True)

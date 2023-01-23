@@ -8,16 +8,28 @@ class ConvertWordDocToPDFType(graphene.ObjectType):
     url = graphene.String(required = True)
     sessionId = graphene.String(required = True)
     sessionType = graphene.String(required = True)
+    documentName = graphene.String(required = True)
+    
     
 class ConvertPDFToWordDocType(graphene.ObjectType):
     url = graphene.String(required = True)
     sessionId = graphene.String(required = True)
     sessionType = graphene.String(required = True)
+    documentName = graphene.String(required = True)
     
 class MergePDFFilesType(graphene.ObjectType):
     url = graphene.String(required = True)
     sessionId = graphene.String(required = True)
     sessionType = graphene.String(required = True)
+    documentName = graphene.String(required = True) 
+    
+class ReducePDFSizeType(graphene.ObjectType):
+    url = graphene.String(required = True)
+    sessionId = graphene.String(required = True)
+    sessionType = graphene.String(required = True)
+    documentName = graphene.String(required = True) 
+    inputSize = graphene.String(required = True)
+    outputSize = graphene.String(required = True)
     
 class PDFMetaDataType(graphene.ObjectType):
     sessionId = graphene.String(required = True)

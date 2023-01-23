@@ -9,6 +9,7 @@ mutation ConvertPDF2Word($input: ConvertPDFToWordDocInputType!) {
       url
       sessionId
       sessionType
+      documentName
     }
   }
 }

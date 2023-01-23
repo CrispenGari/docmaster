@@ -59,11 +59,7 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data?.convertDocToPDF.response?.url
-            ?.split("/")
-            [
-              data?.convertDocToPDF.response?.url?.split("/").length - 1
-            ].replace("%20", " "),
+          data?.convertDocToPDF.response?.documentName.replace("%20", " "),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
           setProgress(totalBytesWritten / totalBytesExpectedToWrite)
@@ -275,12 +271,10 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
               fontSize: 20,
               marginVertical: 20,
             }}
-          >{`File name: ${data.convertDocToPDF.response?.url
-            ?.split("/")
-            [data.convertDocToPDF.response?.url?.split("/").length - 1].replace(
-              "%20",
-              " "
-            )}`}</Text>
+          >{`File name: ${data.convertDocToPDF.response?.documentName.replace(
+            "%20",
+            " "
+          )}`}</Text>
 
           {progress > 0 && progress < 1 ? (
             <View
@@ -357,9 +351,8 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 onPress={() => {
                   navigation.navigate("PdfPreview", {
                     uri: previewURL,
-                    fileName: previewURL
-                      ?.split("/")
-                      [previewURL?.split("/").length - 1].replace(
+                    fileName:
+                      data.convertDocToPDF?.response?.documentName.replace(
                         "%20",
                         " "
                       ) as any,

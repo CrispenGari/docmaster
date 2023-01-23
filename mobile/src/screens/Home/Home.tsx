@@ -123,6 +123,13 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
           <IconButton
             Icon={<Entypo name="resize-100" size={30} color="white" />}
             title="PDF Compressor"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "PDF Compressor",
+                nFiles: 1,
+                service: "compress",
+              });
+            }}
           />
         </ScrollView>
       </View>

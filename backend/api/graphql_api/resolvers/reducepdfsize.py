@@ -1,34 +1,35 @@
 import graphene
 from graphql_api.resolvers.inputs import *
 from graphql_api.resolvers.objects import *
+from graphql_api.resolvers.utils import *
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import uuid
 import os
-from pdf2docx import Converter
+import pypdf
 
 cwd = os.getcwd()
 temp_path = os.path.join(cwd, 'temp')
 
-class ConvertPDFToWordDocument(graphene.Mutation):
+class ReducePDFSize(graphene.Mutation):
     class Arguments:
-        input = graphene.Argument(graphene.NonNull(ConvertPDFToWordDocInputType))
+        input = graphene.Argument(graphene.NonNull(ReducePDFSizeInputType))
     error = graphene.Field(ErrorType, required=False)
     success = graphene.Boolean(required=True)
-    response = graphene.Field(ConvertPDFToWordDocType, required=False)
+    response = graphene.Field(ReducePDFSizeType, required=False)
     
     def mutate(self, info, input, **kwargs):
         try:
             file = input.file
             if input.saveName:
                 # if the user does not give us a savename
-                saveName = input.saveName if input.saveName.split('.')[-1].lower() == "docx" else input.saveName + '.docx'
+                saveName = input.saveName if input.saveName.split('.')[-1].lower() == "pdf" else input.saveName + '.pdf'
             else:
                 # then we use a original document name
-                saveName = "".join(str(file.name).split('.')[:-1]) + ".docx"
+                saveName = "".join(str(file.name).split('.')[:-1]) + ".pdf"
                 
             if "." + file.name.split('.')[-1].lower() != ".pdf":
-                return ConvertPDFToWordDocument(
+                return ReducePDFSize(
                      success = False,
                      error = ErrorType(
                          field = "extension",
@@ -37,32 +38,45 @@ class ConvertPDFToWordDocument(graphene.Mutation):
                 )
             
             sessionId = str(uuid.uuid4())[:5]
-            sessionPath = os.path.join(temp_path, 'pdf2docx', sessionId)
+            sessionPath = os.path.join(temp_path, 'reducepdfsize', sessionId)
             if not os.path.exists(sessionPath):
                 os.makedirs(sessionPath)
            
             _file_fom_client_save_path = os.path.join(sessionPath, file.name)
             default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
             
-            cv = Converter(_file_fom_client_save_path)
-            cv.convert(os.path.join(sessionPath, saveName))      # all pages by default
-            cv.close()
+            reader = pypdf.PdfReader(_file_fom_client_save_path)
+            writer = pypdf.PdfWriter()
             
-            return ConvertPDFToWordDocument(
+            inputSize = convert_size(os.path.getsize(_file_fom_client_save_path))
+            
+            for page in reader.pages:
+                writer.add_page(page)
+                
+            writer.add_metadata(reader.metadata)
+            
+            with open(os.path.join(sessionPath, saveName), "wb") as fp:
+                writer.write(fp)
+                
+            outputSize = convert_size(os.path.getsize(os.path.join(sessionPath, saveName)))
+                
+            return ReducePDFSize(
                 success = True,
-                response = ConvertWordDocToPDFType(
+                response = ReducePDFSizeType(
                     documentName = saveName,
+                    outputSize = outputSize,
+                    inputSize = inputSize,
                     sessionId = sessionId,
-                    sessionType = "pdf2docx",
-                    url = f"http://127.0.0.1:3001/temp/files/pdf2docx/{sessionId}/{saveName.replace(' ', '%20')}"
+                    sessionType = "reducepdfsize",
+                    url = f"http://127.0.0.1:3001/temp/files/reducepdfsize/{sessionId}/{saveName.replace(' ', '%20')}"
                 )
             )
         except Exception as e:
             print(e)
-            return ConvertPDFToWordDocument(
+            return ReducePDFSize(
                 success = False,
                 error = ErrorType(
                     field = 'server',
-                    message = 'Something went wrong during converting file to PDF.'
+                    message = 'Something went wrong during compressing PDF file by 86%.'
                 )
             )

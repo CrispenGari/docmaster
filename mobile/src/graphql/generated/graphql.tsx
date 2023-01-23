@@ -23,6 +23,7 @@ export type ConvertPdfToWordDocInputType = {
 
 export type ConvertPdfToWordDocType = {
   __typename?: 'ConvertPDFToWordDocType';
+  documentName: Scalars['String'];
   sessionId: Scalars['String'];
   sessionType: Scalars['String'];
   url: Scalars['String'];
@@ -42,6 +43,7 @@ export type ConvertWordDocToPdfInputType = {
 
 export type ConvertWordDocToPdfType = {
   __typename?: 'ConvertWordDocToPDFType';
+  documentName: Scalars['String'];
   sessionId: Scalars['String'];
   sessionType: Scalars['String'];
   url: Scalars['String'];
@@ -88,6 +90,7 @@ export type Mutation = {
   convertPDFToDocx?: Maybe<ConvertPdfToWordDocument>;
   deleteSession?: Maybe<DeleteSession>;
   getPDFMetaData?: Maybe<GetPdfMetaData>;
+  reducePDFSize?: Maybe<ReducePdfSize>;
 };
 
 
@@ -108,6 +111,11 @@ export type MutationDeleteSessionArgs = {
 
 export type MutationGetPdfMetaDataArgs = {
   input: GetPdfMetaDataInputType;
+};
+
+
+export type MutationReducePdfSizeArgs = {
+  input: ReducePdfSizeInputType;
 };
 
 export type PdfMetaDataType = {
@@ -133,6 +141,28 @@ export type Query = {
   hello?: Maybe<Scalars['String']>;
 };
 
+export type ReducePdfSize = {
+  __typename?: 'ReducePDFSize';
+  error?: Maybe<ErrorType>;
+  response?: Maybe<ReducePdfSizeType>;
+  success: Scalars['Boolean'];
+};
+
+export type ReducePdfSizeInputType = {
+  file: Scalars['Upload'];
+  saveName?: InputMaybe<Scalars['String']>;
+};
+
+export type ReducePdfSizeType = {
+  __typename?: 'ReducePDFSizeType';
+  documentName: Scalars['String'];
+  inputSize: Scalars['String'];
+  outputSize: Scalars['String'];
+  sessionId: Scalars['String'];
+  sessionType: Scalars['String'];
+  url: Scalars['String'];
+};
+
 export type ErrorFragmentFragment = { __typename?: 'ErrorType', message: string, field: string };
 
 export type DeleteSessionMutationVariables = Exact<{
@@ -154,14 +184,21 @@ export type ConvertPdf2WordMutationVariables = Exact<{
 }>;
 
 
-export type ConvertPdf2WordMutation = { __typename?: 'Mutation', convertPDFToDocx?: { __typename?: 'ConvertPDFToWordDocument', success: boolean, error?: { __typename?: 'ErrorType', field: string, message: string } | null, response?: { __typename?: 'ConvertPDFToWordDocType', url: string, sessionId: string, sessionType: string } | null } | null };
+export type ConvertPdf2WordMutation = { __typename?: 'Mutation', convertPDFToDocx?: { __typename?: 'ConvertPDFToWordDocument', success: boolean, error?: { __typename?: 'ErrorType', field: string, message: string } | null, response?: { __typename?: 'ConvertPDFToWordDocType', url: string, sessionId: string, sessionType: string, documentName: string } | null } | null };
+
+export type ReducePdfSizeMutationVariables = Exact<{
+  input: ReducePdfSizeInputType;
+}>;
+
+
+export type ReducePdfSizeMutation = { __typename?: 'Mutation', reducePDFSize?: { __typename?: 'ReducePDFSize', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'ReducePDFSizeType', url: string, sessionId: string, sessionType: string, documentName: string, inputSize: string, outputSize: string } | null } | null };
 
 export type ConvertWord2PdfMutationVariables = Exact<{
   input: ConvertWordDocToPdfInputType;
 }>;
 
 
-export type ConvertWord2PdfMutation = { __typename?: 'Mutation', convertDocToPDF?: { __typename?: 'ConvertWordDocumentToPDF', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'ConvertWordDocToPDFType', url: string, sessionId: string, sessionType: string } | null } | null };
+export type ConvertWord2PdfMutation = { __typename?: 'Mutation', convertDocToPDF?: { __typename?: 'ConvertWordDocumentToPDF', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'ConvertWordDocToPDFType', url: string, sessionId: string, sessionType: string, documentName: string } | null } | null };
 
 export const ErrorFragmentFragmentDoc = gql`
     fragment ErrorFragment on ErrorType {
@@ -269,6 +306,7 @@ export const ConvertPdf2WordDocument = gql`
       url
       sessionId
       sessionType
+      documentName
     }
   }
 }
@@ -299,6 +337,50 @@ export function useConvertPdf2WordMutation(baseOptions?: Apollo.MutationHookOpti
 export type ConvertPdf2WordMutationHookResult = ReturnType<typeof useConvertPdf2WordMutation>;
 export type ConvertPdf2WordMutationResult = Apollo.MutationResult<ConvertPdf2WordMutation>;
 export type ConvertPdf2WordMutationOptions = Apollo.BaseMutationOptions<ConvertPdf2WordMutation, ConvertPdf2WordMutationVariables>;
+export const ReducePdfSizeDocument = gql`
+    mutation ReducePDFSize($input: ReducePDFSizeInputType!) {
+  reducePDFSize(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      url
+      sessionId
+      sessionType
+      documentName
+      inputSize
+      outputSize
+    }
+  }
+}
+    ${ErrorFragmentFragmentDoc}`;
+export type ReducePdfSizeMutationFn = Apollo.MutationFunction<ReducePdfSizeMutation, ReducePdfSizeMutationVariables>;
+
+/**
+ * __useReducePdfSizeMutation__
+ *
+ * To run a mutation, you first call `useReducePdfSizeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useReducePdfSizeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [reducePdfSizeMutation, { data, loading, error }] = useReducePdfSizeMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useReducePdfSizeMutation(baseOptions?: Apollo.MutationHookOptions<ReducePdfSizeMutation, ReducePdfSizeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ReducePdfSizeMutation, ReducePdfSizeMutationVariables>(ReducePdfSizeDocument, options);
+      }
+export type ReducePdfSizeMutationHookResult = ReturnType<typeof useReducePdfSizeMutation>;
+export type ReducePdfSizeMutationResult = Apollo.MutationResult<ReducePdfSizeMutation>;
+export type ReducePdfSizeMutationOptions = Apollo.BaseMutationOptions<ReducePdfSizeMutation, ReducePdfSizeMutationVariables>;
 export const ConvertWord2PdfDocument = gql`
     mutation ConvertWord2PDF($input: ConvertWordDocToPDFInputType!) {
   convertDocToPDF(input: $input) {
@@ -310,6 +392,7 @@ export const ConvertWord2PdfDocument = gql`
       url
       sessionId
       sessionType
+      documentName
     }
   }
 }

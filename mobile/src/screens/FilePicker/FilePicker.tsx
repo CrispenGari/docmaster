@@ -6,6 +6,7 @@ import { AppBackButton } from "../../components";
 import PdfMeta from "../../components/PdfMeta/PdfMeta";
 import PDF2Word from "../../components/PDF2Word/PDF2Word";
 import Word2PDF from "../../components/Word2PDF/Word2PDF";
+import PDFSize from "../../components/PDFSize/PDFSize";
 
 const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
   navigation,
@@ -48,6 +49,13 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
     return (
       <Wrapper>
         <PDF2Word params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "compress") {
+    return (
+      <Wrapper>
+        <PDFSize params={route.params} navigation={navigation} />
       </Wrapper>
     );
   }

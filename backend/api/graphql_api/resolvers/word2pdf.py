@@ -48,6 +48,7 @@ class ConvertWordDocumentToPDF(graphene.Mutation):
             return ConvertWordDocumentToPDF(
                 success = True,
                 response = ConvertWordDocToPDFType(
+                    documentName = saveName,
                     sessionId = sessionId,
                     sessionType = "doc2pdf",
                     url = f"http://127.0.0.1:3001/temp/files/doc2pdf/{sessionId}/{saveName.replace(' ', '%20')}"
