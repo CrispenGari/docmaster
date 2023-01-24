@@ -7,12 +7,13 @@ import { ServicesType } from "../../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
-import { useConvertPdf2WordMutation } from "../../graphql/generated/graphql";
+import { useEncryptPdfMutation } from "../../graphql/generated/graphql";
 import { generateRNFile } from "../../utils";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import IndeterminateProgress from "../LinearProgress/LinearProgress";
+import CustomTextInput from "../CustomTextInput/CustomTextInput";
 interface Props {
   params: Readonly<{
     nFiles: number;
@@ -21,15 +22,19 @@ interface Props {
   }>;
   navigation: StackNavigationProp<AppParamList, "FilePicker", undefined>;
 }
-const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
+const EncryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
   const [doc, setDoc] = useState<DocumentPicker.DocumentResult>();
   const [progress, setProgress] = useState(0);
   const [previewURL, setPreviewURL] = useState<string>("");
-  const [convert, { loading, data }] = useConvertPdf2WordMutation({
+  const [password, setPassword] = useState<string>("");
+  const [hidePassword, setHidePassword] = useState<boolean>(true);
+  const [hideConfPassword, setHideConfPassword] = useState<boolean>(true);
+  const [conf, setConf] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [encrypt, { loading, data }] = useEncryptPdfMutation({
     fetchPolicy: "network-only",
   });
-
-  const convertToWord = async () => {
+  const encryptPDF = async () => {
     if (!!!doc) return;
     if (doc.type === "cancel") return;
     const file = generateRNFile({
@@ -40,25 +45,36 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
     if (!file) {
       return;
     }
-    await convert({
+
+    if (password.trim() !== conf.trim()) {
+      setError("The two passwords must match.");
+      return;
+    }
+    if (password.trim().length < 5) {
+      setError("The password must be at least 5 characters.");
+      return;
+    }
+
+    await encrypt({
       variables: {
         input: {
           file,
+          password: password.trim(),
         },
       },
     });
   };
 
   const share = async () => {
-    if (data?.convertPDFToDocx?.response) {
+    if (data?.encryptPDF?.response) {
       setProgress(0.01);
       const downloadResumable = FileSystem.createDownloadResumable(
-        data.convertPDFToDocx.response.url.replace(
+        data?.encryptPDF.response.url.replace(
           "http://127.0.0.1:3001",
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data.convertPDFToDocx.response?.documentName.replace(" ", "_"),
+          data.encryptPDF.response?.documentName.replace(" ", "_"),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
           setProgress(totalBytesWritten / totalBytesExpectedToWrite)
@@ -78,7 +94,6 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
     }
   };
 
-  const [error, setError] = useState("");
   React.useEffect(() => {
     let mounted: boolean = true;
     if (mounted && !!error) {
@@ -91,6 +106,9 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
         ],
         { cancelable: false }
       );
+
+      setConf("");
+      setPassword("");
     }
     return () => {
       mounted = false;
@@ -99,13 +117,14 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
 
   React.useEffect(() => {
     let mounted: boolean = true;
-    if (mounted && !!data?.convertPDFToDocx?.error) {
-      setError(data.convertPDFToDocx.error.message);
+    if (mounted && !!data?.encryptPDF?.error) {
+      setError(data.encryptPDF.error.message);
     }
     return () => {
       mounted = false;
     };
   }, [data]);
+
   return (
     <View style={{ flex: 1 }}>
       {loading ? (
@@ -124,6 +143,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
           <DoubleCircular color={"white"} size={40} />
         </View>
       ) : null}
+
       <Text
         style={{
           fontFamily: FONTS.regularExtraBold,
@@ -132,7 +152,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
           letterSpacing: 1,
         }}
       >
-        PDF Document To Word
+        Encrypt PDF Document
       </Text>
       <Text
         style={{
@@ -142,9 +162,9 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
           color: "white",
         }}
       >
-        Convert a PDF document to Word Document.
+        Secure your PDF document by adding a password.
       </Text>
-      <Divider title="Convert to Word Document" />
+      <Divider title="Add Password to PDF" />
       <View
         style={{
           justifyContent: "center",
@@ -235,35 +255,76 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
               {!!!doc ? "SELECT PDF" : "RE-SELECT PDF"}
             </Text>
           </TouchableOpacity>
-
-          {!!doc ? (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                backgroundColor: COLORS.main,
-                maxWidth: 300,
-                paddingVertical: 10,
-                alignItems: "center",
-                flex: 1,
-                marginLeft: 10,
-                borderRadius: 5,
-              }}
-              onPress={convertToWord}
-            >
-              <Text
-                style={{
-                  fontFamily: FONTS.regular,
-                  fontSize: 16,
-                  color: "white",
-                }}
-              >
-                CONVERT TO WORD
-              </Text>
-            </TouchableOpacity>
-          ) : null}
         </View>
       </View>
-      {data?.convertPDFToDocx?.success ? (
+
+      {!!doc ? (
+        <View>
+          <CustomTextInput
+            leftIcon={<AntDesign name="lock" size={24} color={COLORS.main} />}
+            placeholder="password"
+            text={password}
+            onChangeText={(text) => setPassword(text)}
+            keyboardType="default"
+            containerStyles={{
+              marginBottom: 10,
+            }}
+            rightIcon={
+              !hidePassword ? (
+                <FontAwesome name="eye" size={24} color={COLORS.main} />
+              ) : (
+                <FontAwesome name="eye-slash" size={24} color={COLORS.main} />
+              )
+            }
+            secureTextEntry={hidePassword}
+            onRightIconPress={() => setHidePassword((state) => !state)}
+          />
+          <CustomTextInput
+            leftIcon={<AntDesign name="lock" size={24} color={COLORS.main} />}
+            placeholder="confirm password"
+            text={conf}
+            onChangeText={(text) => setConf(text)}
+            keyboardType="default"
+            containerStyles={{
+              marginBottom: 10,
+            }}
+            rightIcon={
+              !hideConfPassword ? (
+                <FontAwesome name="eye" size={24} color={COLORS.main} />
+              ) : (
+                <FontAwesome name="eye-slash" size={24} color={COLORS.main} />
+              )
+            }
+            secureTextEntry={hideConfPassword}
+            onRightIconPress={() => setHideConfPassword((state) => !state)}
+            onSubmitEditing={encryptPDF}
+          />
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{
+              backgroundColor: COLORS.main,
+              maxWidth: 300,
+              paddingVertical: 10,
+              alignItems: "center",
+              flex: 1,
+              borderRadius: 5,
+              marginTop: 10,
+            }}
+            onPress={encryptPDF}
+          >
+            <Text
+              style={{
+                fontFamily: FONTS.regular,
+                fontSize: 16,
+                color: "white",
+              }}
+            >
+              LOCK PDF
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+      {data?.encryptPDF?.success ? (
         <View style={{ width: "100%" }}>
           <View
             style={{
@@ -284,7 +345,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 fontSize: 16,
               }}
             >
-              Conversion Successful. Now you can share your document.
+              Encryption Successful. Now you can share your document.
             </Text>
           </View>
           <Text
@@ -295,7 +356,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
               fontSize: 20,
               marginVertical: 20,
             }}
-          >{`File name: ${data.convertPDFToDocx.response?.documentName.replace(
+          >{`File name: ${data.encryptPDF.response?.documentName.replace(
             " ",
             "_"
           )}`}</Text>
@@ -374,10 +435,11 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 onPress={() => {
                   navigation.navigate("PdfPreview", {
                     uri: previewURL,
-                    fileName:
-                      data.convertPDFToDocx?.response?.documentName.replace(
-                        " ",
-                        "_"
+                    fileName: previewURL
+                      ?.split("/")
+                      [previewURL?.split("/").length - 1].replace(
+                        "%20",
+                        " "
                       ) as any,
                   });
                 }}
@@ -400,4 +462,4 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
   );
 };
 
-export default PDF2Word;
+export default EncryptPDF;

@@ -7,4 +7,14 @@ export interface StateType {
   user: any;
 }
 
-export type ServicesType = "meta" | "compress" | "merge" | "2word" | "2pdf";
+export type ServicesType =
+  | "meta"
+  | "compress"
+  | "merge"
+  | "2word"
+  | "2pdf"
+  | "encrypt"
+  | "decrypt"
+  | "images"
+  | "tables"
+  | "text";

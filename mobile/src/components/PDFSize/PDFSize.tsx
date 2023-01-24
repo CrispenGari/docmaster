@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
 import { COLORS, FONTS, serverBaseURL } from "../../constants";
 import Divider from "../Divider/Divider";
@@ -58,7 +58,7 @@ const PDFSize: React.FunctionComponent<Props> = ({ params, navigation }) => {
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data?.reducePDFSize.response?.documentName.replace("%20", " "),
+          data?.reducePDFSize.response?.documentName.replace(" ", "_"),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
           setProgress(totalBytesWritten / totalBytesExpectedToWrite)
@@ -77,6 +77,35 @@ const PDFSize: React.FunctionComponent<Props> = ({ params, navigation }) => {
       }
     }
   };
+
+  const [error, setError] = useState("");
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!error) {
+      Alert.alert(
+        "docmaster",
+        error,
+        [
+          { text: "OK", style: "default" },
+          { text: "CANCEL", style: "destructive" },
+        ],
+        { cancelable: false }
+      );
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [error]);
+
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!data?.reducePDFSize?.error) {
+      setError(data.reducePDFSize.error.message);
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [data]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -268,8 +297,8 @@ const PDFSize: React.FunctionComponent<Props> = ({ params, navigation }) => {
               marginVertical: 20,
             }}
           >{`File name: ${data?.reducePDFSize.response?.documentName.replace(
-            "%20",
-            " "
+            " ",
+            "_"
           )}  [from ${data.reducePDFSize.response?.inputSize} to ${
             data.reducePDFSize.response?.outputSize
           }]`}</Text>
@@ -348,11 +377,10 @@ const PDFSize: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 onPress={() => {
                   navigation.navigate("PdfPreview", {
                     uri: previewURL,
-                    fileName: previewURL
-                      ?.split("/")
-                      [previewURL?.split("/").length - 1].replace(
-                        "%20",
-                        " "
+                    fileName:
+                      data.reducePDFSize?.response?.documentName.replace(
+                        " ",
+                        "_"
                       ) as any,
                   });
                 }}

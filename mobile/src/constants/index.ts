@@ -1,7 +1,7 @@
 import { Dimensions } from "react-native";
 
-export const uri: string = "https://aac1-41-246-130-40.ngrok.io/graphql/";
-export const serverBaseURL = "https://aac1-41-246-130-40.ngrok.io";
+export const uri: string = "https://a411-41-246-129-153.ngrok.io/graphql/";
+export const serverBaseURL = "https://a411-41-246-129-153.ngrok.io";
 export const SCREEN_WIDTH: number = Dimensions.get("screen").width;
 export const SCREEN_HEIGHT: number = Dimensions.get("screen").height;
 

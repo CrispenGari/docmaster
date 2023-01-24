@@ -23,6 +23,17 @@ class MergePDFFilesType(graphene.ObjectType):
     sessionType = graphene.String(required = True)
     documentName = graphene.String(required = True) 
     
+class EncryptPDFFileType(graphene.ObjectType):
+    url = graphene.String(required = True)
+    sessionId = graphene.String(required = True)
+    sessionType = graphene.String(required = True)
+    documentName = graphene.String(required = True) 
+    
+class DecryptPDFFileType(graphene.ObjectType):
+    url = graphene.String(required = True)
+    sessionId = graphene.String(required = True)
+    sessionType = graphene.String(required = True)
+    documentName = graphene.String(required = True) 
 class ReducePDFSizeType(graphene.ObjectType):
     url = graphene.String(required = True)
     sessionId = graphene.String(required = True)

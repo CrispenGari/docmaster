@@ -68,6 +68,35 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
     };
   }, [readMetaResults]);
 
+  const [error, setError] = useState("");
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!error) {
+      Alert.alert(
+        "docmaster",
+        error,
+        [
+          { text: "OK", style: "default" },
+          { text: "CANCEL", style: "destructive" },
+        ],
+        { cancelable: false }
+      );
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [error]);
+
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!readMetaResults?.getPDFMetaData?.error) {
+      setError(readMetaResults.getPDFMetaData.error.message);
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [readMetaResults]);
+
   return (
     <View style={{ flex: 1 }}>
       {readMetaLoading ? (

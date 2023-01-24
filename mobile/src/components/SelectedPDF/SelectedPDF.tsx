@@ -190,6 +190,7 @@ const SelectedPDF: React.FunctionComponent<Props> = ({
         Select Pages
       </Text>
       <TextInput
+        editable={false}
         style={{
           paddingVertical: 5,
           paddingHorizontal: 10,

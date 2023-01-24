@@ -5,8 +5,11 @@ class Mutation(graphene.ObjectType):
     convertDocToPDF = ConvertWordDocumentToPDF.Field()
     convertPDFToDocx = ConvertPDFToWordDocument.Field()
     getPDFMetaData = GetPDFMetaData.Field()
+    mergePDFs = MergePDFFilesMutation.Field()
     deleteSession = DeleteSession.Field()
     reducePDFSize = ReducePDFSize.Field()
+    encryptPDF = EncryptPDFDocument.Field()
+    decryptPDF = DecryptPDFDocument.Field()
 
 class Query(graphene.ObjectType):
     hello = graphene.String()

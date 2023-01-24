@@ -1,0 +1,14 @@
+mutation EncryptPDF($input: EncryptPDFInputType!) {
+  encryptPDF(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      url
+      sessionId
+      sessionType
+      documentName
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
 import { COLORS, FONTS, serverBaseURL } from "../../constants";
 import Divider from "../Divider/Divider";
@@ -69,12 +69,21 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
     ]);
   };
 
-  console.log(JSON.stringify(documentsToMerge, null, 2));
-
   const mergePDFs = async () => {
-    // if (!!!doc) return;
-    // if (doc.type === "cancel") return;
-
+    if (!!!outputName.trim()) {
+      Alert.alert(
+        "docmaster",
+        "Output Name for the document is required.",
+        [
+          { text: "OK", style: "default" },
+          { text: "CANCEL", style: "destructive" },
+        ],
+        {
+          cancelable: false,
+        }
+      );
+      return;
+    }
     if (documentsToMerge.length === 0) {
       return;
     }
@@ -82,13 +91,14 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
       variables: {
         input: {
           pdfs: [
-            ...documentsToMerge.map(({ doc, pages }) => ({
+            ...documentsToMerge.map(({ doc, pages, id }) => ({
               file: generateRNFile({
                 mimeType: doc.mimeType ?? "application/pdf",
                 name: doc.name,
                 uri: doc.uri,
               }),
               pages: pages,
+              documentNumber: id,
             })),
           ],
           saveName: outputName,
@@ -97,6 +107,7 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
     });
   };
 
+  console.log(JSON.stringify(data?.mergePDFs?.response, null, 2));
   const share = async () => {
     if (data?.mergePDFs?.response) {
       setProgress(0.01);
@@ -106,7 +117,7 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data.mergePDFs.response?.documentName.replace("%20", " "),
+          data.mergePDFs.response?.documentName.replace(" ", "_"),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
           setProgress(totalBytesWritten / totalBytesExpectedToWrite)
@@ -122,10 +133,39 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
         }
       } catch (e) {
         console.error(e);
+        setProgress(0);
       }
     }
   };
 
+  const [error, setError] = useState("");
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!error) {
+      Alert.alert(
+        "docmaster",
+        error,
+        [
+          { text: "OK", style: "default" },
+          { text: "CANCEL", style: "destructive" },
+        ],
+        { cancelable: false }
+      );
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [error]);
+
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!data?.mergePDFs?.error) {
+      setError(data.mergePDFs.error.message);
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [data]);
   return (
     <View style={{ flex: 1 }}>
       {loading ? (
@@ -207,6 +247,7 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
         Note: "These documents will be merged based on the order of selection,
         as they are numbered from 1-N".
       </Text>
+
       <CustomTextInput
         leftIcon={
           <MaterialIcons
@@ -282,8 +323,8 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
               marginVertical: 20,
             }}
           >{`File name: ${data.mergePDFs.response?.documentName.replace(
-            "%20",
-            " "
+            " ",
+            "_"
           )}`}</Text>
 
           {progress > 0 && progress < 1 ? (
@@ -361,8 +402,8 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
                   navigation.navigate("PdfPreview", {
                     uri: previewURL,
                     fileName: data.mergePDFs?.response?.documentName.replace(
-                      "%20",
-                      " "
+                      " ",
+                      "_"
                     ) as any,
                   });
                 }}

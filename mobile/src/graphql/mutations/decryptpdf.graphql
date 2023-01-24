@@ -1,0 +1,14 @@
+mutation DecryptPDF($input: DecryptPDFInputType!) {
+  decryptPDF(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      url
+      sessionId
+      sessionType
+      documentName
+    }
+  }
+}

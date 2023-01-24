@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
 import { COLORS, FONTS, serverBaseURL } from "../../constants";
 import Divider from "../Divider/Divider";
@@ -59,7 +59,7 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data?.convertDocToPDF.response?.documentName.replace("%20", " "),
+          data?.convertDocToPDF.response?.documentName.replace(" ", "_"),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
           setProgress(totalBytesWritten / totalBytesExpectedToWrite)
@@ -78,6 +78,35 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
       }
     }
   };
+
+  const [error, setError] = useState("");
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!error) {
+      Alert.alert(
+        "docmaster",
+        error,
+        [
+          { text: "OK", style: "default" },
+          { text: "CANCEL", style: "destructive" },
+        ],
+        { cancelable: false }
+      );
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [error]);
+
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!data?.convertDocToPDF?.error) {
+      setError(data.convertDocToPDF.error.message);
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [data]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -272,8 +301,8 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
               marginVertical: 20,
             }}
           >{`File name: ${data.convertDocToPDF.response?.documentName.replace(
-            "%20",
-            " "
+            " ",
+            "_"
           )}`}</Text>
 
           {progress > 0 && progress < 1 ? (
@@ -353,8 +382,8 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
                     uri: previewURL,
                     fileName:
                       data.convertDocToPDF?.response?.documentName.replace(
-                        "%20",
-                        " "
+                        " ",
+                        "_"
                       ) as any,
                   });
                 }}

@@ -56,6 +56,26 @@ export type ConvertWordDocumentToPdf = {
   success: Scalars['Boolean'];
 };
 
+export type DecryptPdfDocument = {
+  __typename?: 'DecryptPDFDocument';
+  error?: Maybe<ErrorType>;
+  response?: Maybe<DecryptPdfFileType>;
+  success: Scalars['Boolean'];
+};
+
+export type DecryptPdfFileType = {
+  __typename?: 'DecryptPDFFileType';
+  documentName: Scalars['String'];
+  sessionId: Scalars['String'];
+  sessionType: Scalars['String'];
+  url: Scalars['String'];
+};
+
+export type DecryptPdfInputType = {
+  file: Scalars['Upload'];
+  password: Scalars['String'];
+};
+
 export type DeleteSession = {
   __typename?: 'DeleteSession';
   error?: Maybe<ErrorType>;
@@ -65,6 +85,26 @@ export type DeleteSession = {
 export type DeleteSessionInputType = {
   sessionId: Scalars['String'];
   sessionType: Scalars['String'];
+};
+
+export type EncryptPdfDocument = {
+  __typename?: 'EncryptPDFDocument';
+  error?: Maybe<ErrorType>;
+  response?: Maybe<EncryptPdfFileType>;
+  success: Scalars['Boolean'];
+};
+
+export type EncryptPdfFileType = {
+  __typename?: 'EncryptPDFFileType';
+  documentName: Scalars['String'];
+  sessionId: Scalars['String'];
+  sessionType: Scalars['String'];
+  url: Scalars['String'];
+};
+
+export type EncryptPdfInputType = {
+  file: Scalars['Upload'];
+  password: Scalars['String'];
 };
 
 export type ErrorType = {
@@ -105,6 +145,7 @@ export type MergePdfFilesType = {
 };
 
 export type MergePdfInputType = {
+  documentNumber: Scalars['Int'];
   file: Scalars['Upload'];
   pages: Array<InputMaybe<Scalars['Int']>>;
 };
@@ -113,7 +154,9 @@ export type Mutation = {
   __typename?: 'Mutation';
   convertDocToPDF?: Maybe<ConvertWordDocumentToPdf>;
   convertPDFToDocx?: Maybe<ConvertPdfToWordDocument>;
+  decryptPDF?: Maybe<DecryptPdfDocument>;
   deleteSession?: Maybe<DeleteSession>;
+  encryptPDF?: Maybe<EncryptPdfDocument>;
   getPDFMetaData?: Maybe<GetPdfMetaData>;
   mergePDFs?: Maybe<MergePdfFilesMutation>;
   reducePDFSize?: Maybe<ReducePdfSize>;
@@ -130,8 +173,18 @@ export type MutationConvertPdfToDocxArgs = {
 };
 
 
+export type MutationDecryptPdfArgs = {
+  input: DecryptPdfInputType;
+};
+
+
 export type MutationDeleteSessionArgs = {
   input: DeleteSessionInputType;
+};
+
+
+export type MutationEncryptPdfArgs = {
+  input: EncryptPdfInputType;
 };
 
 
@@ -196,12 +249,26 @@ export type ReducePdfSizeType = {
 
 export type ErrorFragmentFragment = { __typename?: 'ErrorType', message: string, field: string };
 
+export type DecryptPdfMutationVariables = Exact<{
+  input: DecryptPdfInputType;
+}>;
+
+
+export type DecryptPdfMutation = { __typename?: 'Mutation', decryptPDF?: { __typename?: 'DecryptPDFDocument', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'DecryptPDFFileType', url: string, sessionId: string, sessionType: string, documentName: string } | null } | null };
+
 export type DeleteSessionMutationVariables = Exact<{
   input: DeleteSessionInputType;
 }>;
 
 
 export type DeleteSessionMutation = { __typename?: 'Mutation', deleteSession?: { __typename?: 'DeleteSession', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null } | null };
+
+export type EncryptPdfMutationVariables = Exact<{
+  input: EncryptPdfInputType;
+}>;
+
+
+export type EncryptPdfMutation = { __typename?: 'Mutation', encryptPDF?: { __typename?: 'EncryptPDFDocument', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'EncryptPDFFileType', url: string, sessionId: string, sessionType: string, documentName: string } | null } | null };
 
 export type ReadPdfMetaMutationVariables = Exact<{
   input: GetPdfMetaDataInputType;
@@ -244,6 +311,48 @@ export const ErrorFragmentFragmentDoc = gql`
   field
 }
     `;
+export const DecryptPdfDocument = gql`
+    mutation DecryptPDF($input: DecryptPDFInputType!) {
+  decryptPDF(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      url
+      sessionId
+      sessionType
+      documentName
+    }
+  }
+}
+    ${ErrorFragmentFragmentDoc}`;
+export type DecryptPdfMutationFn = Apollo.MutationFunction<DecryptPdfMutation, DecryptPdfMutationVariables>;
+
+/**
+ * __useDecryptPdfMutation__
+ *
+ * To run a mutation, you first call `useDecryptPdfMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDecryptPdfMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [decryptPdfMutation, { data, loading, error }] = useDecryptPdfMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useDecryptPdfMutation(baseOptions?: Apollo.MutationHookOptions<DecryptPdfMutation, DecryptPdfMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DecryptPdfMutation, DecryptPdfMutationVariables>(DecryptPdfDocument, options);
+      }
+export type DecryptPdfMutationHookResult = ReturnType<typeof useDecryptPdfMutation>;
+export type DecryptPdfMutationResult = Apollo.MutationResult<DecryptPdfMutation>;
+export type DecryptPdfMutationOptions = Apollo.BaseMutationOptions<DecryptPdfMutation, DecryptPdfMutationVariables>;
 export const DeleteSessionDocument = gql`
     mutation DeleteSession($input: DeleteSessionInputType!) {
   deleteSession(input: $input) {
@@ -280,6 +389,48 @@ export function useDeleteSessionMutation(baseOptions?: Apollo.MutationHookOption
 export type DeleteSessionMutationHookResult = ReturnType<typeof useDeleteSessionMutation>;
 export type DeleteSessionMutationResult = Apollo.MutationResult<DeleteSessionMutation>;
 export type DeleteSessionMutationOptions = Apollo.BaseMutationOptions<DeleteSessionMutation, DeleteSessionMutationVariables>;
+export const EncryptPdfDocument = gql`
+    mutation EncryptPDF($input: EncryptPDFInputType!) {
+  encryptPDF(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      url
+      sessionId
+      sessionType
+      documentName
+    }
+  }
+}
+    ${ErrorFragmentFragmentDoc}`;
+export type EncryptPdfMutationFn = Apollo.MutationFunction<EncryptPdfMutation, EncryptPdfMutationVariables>;
+
+/**
+ * __useEncryptPdfMutation__
+ *
+ * To run a mutation, you first call `useEncryptPdfMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEncryptPdfMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [encryptPdfMutation, { data, loading, error }] = useEncryptPdfMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useEncryptPdfMutation(baseOptions?: Apollo.MutationHookOptions<EncryptPdfMutation, EncryptPdfMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EncryptPdfMutation, EncryptPdfMutationVariables>(EncryptPdfDocument, options);
+      }
+export type EncryptPdfMutationHookResult = ReturnType<typeof useEncryptPdfMutation>;
+export type EncryptPdfMutationResult = Apollo.MutationResult<EncryptPdfMutation>;
+export type EncryptPdfMutationOptions = Apollo.BaseMutationOptions<EncryptPdfMutation, EncryptPdfMutationVariables>;
 export const ReadPdfMetaDocument = gql`
     mutation ReadPDFMeta($input: GetPDFMetaDataInputType!) {
   getPDFMetaData(input: $input) {

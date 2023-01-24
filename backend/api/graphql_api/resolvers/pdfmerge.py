@@ -6,6 +6,7 @@ from django.core.files.base import ContentFile
 import uuid
 import os
 import pypdf
+import operator
 
 cwd = os.getcwd()
 temp_path = os.path.join(cwd, 'temp')
@@ -19,55 +20,47 @@ class MergePDFFilesMutation(graphene.Mutation):
     
     def mutate(self, info, input, **kwargs):
         try:
-            files = input.files
-            if all(map(lambda x: "." + x.name.split('.')[-1].lower() != ".pdf", files)) == False:
-                return MergePDFFilesMutation(
-                     success = False,
-                     error = ErrorType(
-                         field = "extension",
-                         message = f"Only documents with extensions ({', '.join(['.pdf'])}) are required."
-                     )
-                )
-            
+            files = input.pdfs
+            saveName = input.saveName if input.saveName.split('.')[-1].lower() == "pdf" else input.saveName + '.pdf'
+            sortedFiles = list(sorted(files, key=operator.itemgetter('documentNumber')))
+           
             sessionId = str(uuid.uuid4())[:5]
             sessionPath = os.path.join(temp_path, 'pdfmerge', sessionId)
             if not os.path.exists(sessionPath):
                 os.makedirs(sessionPath)
            
-            for file in files:
-                _file_fom_client_save_path = os.path.join(sessionPath, file.name)
-                default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
+            for file in sortedFiles:
+                _file_fom_client_save_path = os.path.join(sessionPath, file.file.name)
+                default_storage.save(_file_fom_client_save_path, ContentFile(file.file.read()))
                 
-                reader = pypdf.PdfReader(_file_fom_client_save_path)
-                
-            _pages = len(reader.pages)
-            _author = reader.metadata.get('/Author')
-            _producer = reader.metadata.get('/Producer')
-            _creator = reader.metadata.get('/Creator')
-            _createdAt = reader.metadata.get('/CreationDate')
-            _modifiedAt = reader.metadata.get('/ModDate')
-            _pageLayout = reader.page_layout
-            _pageLabels = reader.page_labels
-            _pageMode = reader.page_mode
-            _isLocked = reader.is_encrypted
-            _pdfHeader = reader.pdf_header
+            merger = pypdf.PdfMerger()
+            for file in sortedFiles:
+                _file_saved_path = os.path.join(sessionPath, file.file.name)
+                merger.append(_file_saved_path)
+            merger.write(os.path.join(sessionPath, saveName))
+            merger.close()
             
+            #  THIS CODE IF FOR merging PDF's with selected pages
+            # for file in sortedFiles:
+            #     _file_saved_path = os.path.join(sessionPath, file.file.name)
+            #     inputData = open(_file_saved_path, "rb")
+            #     if len(file.pages) == 0:
+            #         merger.append(inputData)
+            #     else:
+            #         merger.append(fileobj=inputData, pages= tuple(file.pages))
+                
+            # output = open(os.path.join(sessionPath, saveName), "wb")
+            # merger.write(output)
+            # merger.close()
+            # output.close()
+         
             return MergePDFFilesMutation(
-                success = True,
-                response = MergePDFFilesType(
+                    success = True,
+                    response = MergePDFFilesType(
                     sessionId = sessionId,
+                    documentName = saveName,
                     sessionType = "pdfmerge",
-                    pages = _pages,
-                    author = _author,
-                    producer = _producer,
-                    creator = _creator,
-                    createdAt = _createdAt,
-                    modifiedAt = _modifiedAt,
-                    pageLayout = _pageLayout,
-                    pageLabels = _pageLabels,
-                    isLocked = _isLocked,
-                    pageMode = _pageMode,
-                    pdfHeader = _pdfHeader,
+                    url = f"http://127.0.0.1:3001/temp/files/pdfmerge/{sessionId}/{saveName.replace(' ', '%20')}"
                 )
             )
         except Exception as e:

@@ -172,6 +172,10 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
             Icon={<Entypo name="images" size={30} color="white" />}
             title="Extract images from PDF"
           />
+          <IconButton
+            Icon={<Entypo name="text" size={30} color="white" />}
+            title="Extract TEXT from PDF"
+          />
         </ScrollView>
       </View>
 
@@ -213,6 +217,13 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
               />
             }
             title="Encrypt PDF Document"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "Lock PDF",
+                nFiles: 1,
+                service: "encrypt",
+              });
+            }}
           />
           <IconButton
             Icon={
@@ -223,6 +234,13 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
               />
             }
             title="Decrypt PDF Document"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "Unlock PDF",
+                nFiles: 1,
+                service: "decrypt",
+              });
+            }}
           />
         </ScrollView>
       </View>

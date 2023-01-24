@@ -1,6 +1,6 @@
 import React, { useLayoutEffect } from "react";
 import { AppNavProps } from "../../params";
-import { ScrollView } from "react-native";
+import { KeyboardAvoidingView, ScrollView } from "react-native";
 import { COLORS } from "../../constants";
 import { AppBackButton } from "../../components";
 import PdfMeta from "../../components/PdfMeta/PdfMeta";
@@ -8,6 +8,8 @@ import PDF2Word from "../../components/PDF2Word/PDF2Word";
 import Word2PDF from "../../components/Word2PDF/Word2PDF";
 import PDFSize from "../../components/PDFSize/PDFSize";
 import PDFMerge from "../../components/PDFMerge/PDFMerge";
+import DecryptPDF from "../../components/Decrypt/Decrypt";
+import EncryptPDF from "../../components/Encrypt/Encrypt";
 
 const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
   navigation,
@@ -55,7 +57,7 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
   }
   if (service === "compress") {
     return (
-      <Wrapper>
+      <Wrapper withTextInputs>
         <PDFSize params={route.params} navigation={navigation} />
       </Wrapper>
     );
@@ -64,6 +66,20 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
     return (
       <Wrapper>
         <PDFMerge params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "decrypt") {
+    return (
+      <Wrapper>
+        <DecryptPDF params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "encrypt") {
+    return (
+      <Wrapper withTextInputs>
+        <EncryptPDF params={route.params} navigation={navigation} />
       </Wrapper>
     );
   }
@@ -80,16 +96,44 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
 };
 export default FilePicker;
 
-const Wrapper: React.FunctionComponent<{ children: React.ReactNode }> = ({
-  children,
-}) => (
-  <ScrollView
-    style={{
-      padding: 10,
-      backgroundColor: COLORS.main_secondary,
-      flex: 1,
-    }}
-  >
-    {children}
-  </ScrollView>
-);
+const Wrapper: React.FunctionComponent<{
+  children: React.ReactNode;
+  withTextInputs?: boolean;
+}> = ({ children, withTextInputs = false }) => {
+  if (withTextInputs) {
+    return (
+      <KeyboardAvoidingView
+        style={{
+          flex: 1,
+          width: "100%",
+          backgroundColor: COLORS.main_secondary,
+        }}
+        behavior="padding"
+        enabled
+        keyboardVerticalOffset={100}
+      >
+        <ScrollView
+          style={{
+            padding: 10,
+            backgroundColor: COLORS.main_secondary,
+            flex: 1,
+          }}
+        >
+          {children}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    );
+  }
+
+  return (
+    <ScrollView
+      style={{
+        padding: 10,
+        backgroundColor: COLORS.main_secondary,
+        flex: 1,
+      }}
+    >
+      {children}
+    </ScrollView>
+  );
+};

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { COLORS, FONTS, serverBaseURL } from "../../constants";
 import Divider from "../Divider/Divider";
@@ -7,7 +7,7 @@ import { ServicesType } from "../../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
-import { useConvertPdf2WordMutation } from "../../graphql/generated/graphql";
+import { useReducePdfSizeMutation } from "../../graphql/generated/graphql";
 import { generateRNFile } from "../../utils";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
@@ -21,15 +21,15 @@ interface Props {
   }>;
   navigation: StackNavigationProp<AppParamList, "FilePicker", undefined>;
 }
-const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
+const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
   const [doc, setDoc] = useState<DocumentPicker.DocumentResult>();
   const [progress, setProgress] = useState(0);
   const [previewURL, setPreviewURL] = useState<string>("");
-  const [convert, { loading, data }] = useConvertPdf2WordMutation({
+  const [compress, { loading, data }] = useReducePdfSizeMutation({
     fetchPolicy: "network-only",
   });
 
-  const convertToWord = async () => {
+  const compressPDF = async () => {
     if (!!!doc) return;
     if (doc.type === "cancel") return;
     const file = generateRNFile({
@@ -40,7 +40,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
     if (!file) {
       return;
     }
-    await convert({
+    await compress({
       variables: {
         input: {
           file,
@@ -50,15 +50,15 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
   };
 
   const share = async () => {
-    if (data?.convertPDFToDocx?.response) {
+    if (data?.reducePDFSize?.response) {
       setProgress(0.01);
       const downloadResumable = FileSystem.createDownloadResumable(
-        data.convertPDFToDocx.response.url.replace(
+        data?.reducePDFSize.response.url.replace(
           "http://127.0.0.1:3001",
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data.convertPDFToDocx.response?.documentName.replace(" ", "_"),
+          data?.reducePDFSize.response?.documentName.replace("%20", " "),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
           setProgress(totalBytesWritten / totalBytesExpectedToWrite)
@@ -78,34 +78,6 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
     }
   };
 
-  const [error, setError] = useState("");
-  React.useEffect(() => {
-    let mounted: boolean = true;
-    if (mounted && !!error) {
-      Alert.alert(
-        "docmaster",
-        error,
-        [
-          { text: "OK", style: "default" },
-          { text: "CANCEL", style: "destructive" },
-        ],
-        { cancelable: false }
-      );
-    }
-    return () => {
-      mounted = false;
-    };
-  }, [error]);
-
-  React.useEffect(() => {
-    let mounted: boolean = true;
-    if (mounted && !!data?.convertPDFToDocx?.error) {
-      setError(data.convertPDFToDocx.error.message);
-    }
-    return () => {
-      mounted = false;
-    };
-  }, [data]);
   return (
     <View style={{ flex: 1 }}>
       {loading ? (
@@ -132,7 +104,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
           letterSpacing: 1,
         }}
       >
-        PDF Document To Word
+        Reduce PDF Document Size
       </Text>
       <Text
         style={{
@@ -142,9 +114,9 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
           color: "white",
         }}
       >
-        Convert a PDF document to Word Document.
+        Reduce the size of your PDF Document by ~86%.
       </Text>
-      <Divider title="Convert to Word Document" />
+      <Divider title="Reduce PDF Document Size" />
       <View
         style={{
           justifyContent: "center",
@@ -248,7 +220,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 marginLeft: 10,
                 borderRadius: 5,
               }}
-              onPress={convertToWord}
+              onPress={compressPDF}
             >
               <Text
                 style={{
@@ -257,13 +229,13 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                   color: "white",
                 }}
               >
-                CONVERT TO WORD
+                COMPRESS PDF
               </Text>
             </TouchableOpacity>
           ) : null}
         </View>
       </View>
-      {data?.convertPDFToDocx?.success ? (
+      {data?.reducePDFSize?.success ? (
         <View style={{ width: "100%" }}>
           <View
             style={{
@@ -284,7 +256,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 fontSize: 16,
               }}
             >
-              Conversion Successful. Now you can share your document.
+              Compression Successful. Now you can share your document.
             </Text>
           </View>
           <Text
@@ -295,10 +267,12 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
               fontSize: 20,
               marginVertical: 20,
             }}
-          >{`File name: ${data.convertPDFToDocx.response?.documentName.replace(
-            " ",
-            "_"
-          )}`}</Text>
+          >{`File name: ${data?.reducePDFSize.response?.documentName.replace(
+            "%20",
+            " "
+          )}  [from ${data.reducePDFSize.response?.inputSize} to ${
+            data.reducePDFSize.response?.outputSize
+          }]`}</Text>
 
           {progress > 0 && progress < 1 ? (
             <View
@@ -374,10 +348,11 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 onPress={() => {
                   navigation.navigate("PdfPreview", {
                     uri: previewURL,
-                    fileName:
-                      data.convertPDFToDocx?.response?.documentName.replace(
-                        " ",
-                        "_"
+                    fileName: previewURL
+                      ?.split("/")
+                      [previewURL?.split("/").length - 1].replace(
+                        "%20",
+                        " "
                       ) as any,
                   });
                 }}
@@ -400,4 +375,4 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
   );
 };
 
-export default PDF2Word;
+export default DecryptPDF;
