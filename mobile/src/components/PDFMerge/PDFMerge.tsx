@@ -70,6 +70,7 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
   };
 
   const mergePDFs = async () => {
+    setPreviewURL("");
     if (!!!outputName.trim()) {
       Alert.alert(
         "docmaster",
@@ -106,8 +107,6 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
       },
     });
   };
-
-  console.log(JSON.stringify(data?.mergePDFs?.response, null, 2));
   const share = async () => {
     if (data?.mergePDFs?.response) {
       setProgress(0.01);

@@ -30,6 +30,7 @@ const PDFSize: React.FunctionComponent<Props> = ({ params, navigation }) => {
   });
 
   const compressPDF = async () => {
+    setPreviewURL("");
     if (!!!doc) return;
     if (doc.type === "cancel") return;
     const file = generateRNFile({

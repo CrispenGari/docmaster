@@ -40,6 +40,15 @@ class EncryptPDFDocument(graphene.Mutation):
             default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
 
             reader = pypdf.PdfReader(_file_fom_client_save_path)
+            if reader.is_encrypted:
+                return EncryptPDFDocument(
+                    success = False,
+                    error = ErrorType(
+                        field = 'locked',
+                        message = 'Can not encrypt a locked pdf please consider decrypting it first.'
+                    )
+                )
+            
             writer = pypdf.PdfWriter()
             
             for page in reader.pages:
@@ -64,6 +73,6 @@ class EncryptPDFDocument(graphene.Mutation):
                 success = False,
                 error = ErrorType(
                     field = 'server',
-                    message = 'Something went wrong during encrypting file to PDF.'
+                    message = 'Something went wrong during encrypting PDF file.'
                 )
             )

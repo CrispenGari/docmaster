@@ -30,6 +30,7 @@ const PDF2Word: React.FunctionComponent<Props> = ({ params, navigation }) => {
   });
 
   const convertToWord = async () => {
+    setPreviewURL("");
     if (!!!doc) return;
     if (doc.type === "cancel") return;
     const file = generateRNFile({

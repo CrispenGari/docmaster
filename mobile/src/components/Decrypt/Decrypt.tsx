@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import React, { useState } from "react";
 import { COLORS, FONTS, serverBaseURL } from "../../constants";
 import Divider from "../Divider/Divider";
@@ -7,12 +7,13 @@ import { ServicesType } from "../../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
-import { useReducePdfSizeMutation } from "../../graphql/generated/graphql";
+import { useDecryptPdfMutation } from "../../graphql/generated/graphql";
 import { generateRNFile } from "../../utils";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import { AntDesign, Entypo, FontAwesome } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
 import IndeterminateProgress from "../LinearProgress/LinearProgress";
+import CustomTextInput from "../CustomTextInput/CustomTextInput";
 interface Props {
   params: Readonly<{
     nFiles: number;
@@ -25,11 +26,14 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
   const [doc, setDoc] = useState<DocumentPicker.DocumentResult>();
   const [progress, setProgress] = useState(0);
   const [previewURL, setPreviewURL] = useState<string>("");
-  const [compress, { loading, data }] = useReducePdfSizeMutation({
+  const [password, setPassword] = useState<string>("");
+  const [hidePassword, setHidePassword] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [encrypt, { loading, data }] = useDecryptPdfMutation({
     fetchPolicy: "network-only",
   });
-
-  const compressPDF = async () => {
+  const encryptPDF = async () => {
+    setPreviewURL("");
     if (!!!doc) return;
     if (doc.type === "cancel") return;
     const file = generateRNFile({
@@ -40,25 +44,26 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
     if (!file) {
       return;
     }
-    await compress({
+    await encrypt({
       variables: {
         input: {
           file,
+          password: password.trim(),
         },
       },
     });
   };
 
   const share = async () => {
-    if (data?.reducePDFSize?.response) {
+    if (data?.decryptPDF?.response) {
       setProgress(0.01);
       const downloadResumable = FileSystem.createDownloadResumable(
-        data?.reducePDFSize.response.url.replace(
+        data?.decryptPDF.response.url.replace(
           "http://127.0.0.1:3001",
           serverBaseURL
         ),
         FileSystem.documentDirectory +
-          data?.reducePDFSize.response?.documentName.replace("%20", " "),
+          data.decryptPDF.response?.documentName.replace(" ", "_"),
         {},
         ({ totalBytesExpectedToWrite, totalBytesWritten }) =>
           setProgress(totalBytesWritten / totalBytesExpectedToWrite)
@@ -78,6 +83,35 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
     }
   };
 
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!error) {
+      Alert.alert(
+        "docmaster",
+        error,
+        [
+          { text: "OK", style: "default" },
+          { text: "CANCEL", style: "destructive" },
+        ],
+        { cancelable: false }
+      );
+      setPassword("");
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [error]);
+
+  React.useEffect(() => {
+    let mounted: boolean = true;
+    if (mounted && !!data?.decryptPDF?.error) {
+      setError(data.decryptPDF.error.message);
+    }
+    return () => {
+      mounted = false;
+    };
+  }, [data]);
+
   return (
     <View style={{ flex: 1 }}>
       {loading ? (
@@ -96,6 +130,7 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
           <DoubleCircular color={"white"} size={40} />
         </View>
       ) : null}
+
       <Text
         style={{
           fontFamily: FONTS.regularExtraBold,
@@ -104,7 +139,7 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
           letterSpacing: 1,
         }}
       >
-        Reduce PDF Document Size
+        Decrypt PDF Document
       </Text>
       <Text
         style={{
@@ -114,9 +149,10 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
           color: "white",
         }}
       >
-        Reduce the size of your PDF Document by ~86%.
+        If your PDF document is locked you can unlock it and save the decrypted
+        version.
       </Text>
-      <Divider title="Reduce PDF Document Size" />
+      <Divider title="Remove Password from PDF" />
       <View
         style={{
           justifyContent: "center",
@@ -207,35 +243,58 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
               {!!!doc ? "SELECT PDF" : "RE-SELECT PDF"}
             </Text>
           </TouchableOpacity>
-
-          {!!doc ? (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                backgroundColor: COLORS.main,
-                maxWidth: 300,
-                paddingVertical: 10,
-                alignItems: "center",
-                flex: 1,
-                marginLeft: 10,
-                borderRadius: 5,
-              }}
-              onPress={compressPDF}
-            >
-              <Text
-                style={{
-                  fontFamily: FONTS.regular,
-                  fontSize: 16,
-                  color: "white",
-                }}
-              >
-                COMPRESS PDF
-              </Text>
-            </TouchableOpacity>
-          ) : null}
         </View>
       </View>
-      {data?.reducePDFSize?.success ? (
+
+      {!!doc ? (
+        <View style={{ marginBottom: 10 }}>
+          <CustomTextInput
+            leftIcon={<AntDesign name="lock" size={24} color={COLORS.main} />}
+            placeholder="document password"
+            text={password}
+            onChangeText={(text) => setPassword(text)}
+            keyboardType="default"
+            containerStyles={{
+              marginBottom: 10,
+            }}
+            rightIcon={
+              !hidePassword ? (
+                <FontAwesome name="eye" size={24} color={COLORS.main} />
+              ) : (
+                <FontAwesome name="eye-slash" size={24} color={COLORS.main} />
+              )
+            }
+            secureTextEntry={hidePassword}
+            onRightIconPress={() => setHidePassword((state) => !state)}
+            onSubmitEditing={encryptPDF}
+          />
+
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{
+              backgroundColor: COLORS.main,
+              maxWidth: 300,
+              paddingVertical: 10,
+              alignItems: "center",
+              flex: 1,
+              borderRadius: 5,
+              marginTop: 10,
+            }}
+            onPress={encryptPDF}
+          >
+            <Text
+              style={{
+                fontFamily: FONTS.regular,
+                fontSize: 16,
+                color: "white",
+              }}
+            >
+              UNLOCK PDF
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+      {data?.decryptPDF?.success ? (
         <View style={{ width: "100%" }}>
           <View
             style={{
@@ -256,7 +315,7 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
                 fontSize: 16,
               }}
             >
-              Compression Successful. Now you can share your document.
+              Decryption Successful. Now you can share your document.
             </Text>
           </View>
           <Text
@@ -267,12 +326,10 @@ const DecryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
               fontSize: 20,
               marginVertical: 20,
             }}
-          >{`File name: ${data?.reducePDFSize.response?.documentName.replace(
-            "%20",
-            " "
-          )}  [from ${data.reducePDFSize.response?.inputSize} to ${
-            data.reducePDFSize.response?.outputSize
-          }]`}</Text>
+          >{`File name: ${data.decryptPDF.response?.documentName.replace(
+            " ",
+            "_"
+          )}`}</Text>
 
           {progress > 0 && progress < 1 ? (
             <View

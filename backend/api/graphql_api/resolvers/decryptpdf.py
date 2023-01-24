@@ -40,12 +40,21 @@ class DecryptPDFDocument(graphene.Mutation):
             default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
 
             reader = pypdf.PdfReader(_file_fom_client_save_path)
-            writer = pypdf.PdfWriter()
+            if reader.is_encrypted:
+                reader.decrypt(password)
+            else:
+                return DecryptPDFDocument(
+                    success = False,
+                    error = ErrorType(
+                        field = 'unlocked',
+                        message = 'The document is not locked and can not be decrypted.'
+                    )
+                )
             
+            writer = pypdf.PdfWriter()
             for page in reader.pages:
                 writer.add_page(page)
-            writer.encrypt(password)
-            
+    
             with open(os.path.join(sessionPath, file.name), "wb") as f:
                 writer.write(f)
             
@@ -64,6 +73,6 @@ class DecryptPDFDocument(graphene.Mutation):
                 success = False,
                 error = ErrorType(
                     field = 'server',
-                    message = 'Something went wrong during encrypting file to PDF.'
+                    message = 'Something went wrong during decryption of PDF file this maybe because you provide the wrong password for your PDF document.'
                 )
             )

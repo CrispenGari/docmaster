@@ -35,6 +35,7 @@ const EncryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
     fetchPolicy: "network-only",
   });
   const encryptPDF = async () => {
+    setPreviewURL("");
     if (!!!doc) return;
     if (doc.type === "cancel") return;
     const file = generateRNFile({
@@ -259,7 +260,7 @@ const EncryptPDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
       </View>
 
       {!!doc ? (
-        <View>
+        <View style={{ marginBottom: 10 }}>
           <CustomTextInput
             leftIcon={<AntDesign name="lock" size={24} color={COLORS.main} />}
             placeholder="password"
