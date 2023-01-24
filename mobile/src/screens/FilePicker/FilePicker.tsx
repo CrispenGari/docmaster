@@ -10,6 +10,9 @@ import PDFSize from "../../components/PDFSize/PDFSize";
 import PDFMerge from "../../components/PDFMerge/PDFMerge";
 import DecryptPDF from "../../components/Decrypt/Decrypt";
 import EncryptPDF from "../../components/Encrypt/Encrypt";
+import TextExtractions from "../../components/TextExtraction/TextExtraction";
+import ImagesExtractions from "../../components/ImagesExtraction/ImagesExtraction";
+import TablesExtractions from "../../components/TablesExtraction/TablesExtraction";
 
 const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
   navigation,
@@ -80,6 +83,27 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
     return (
       <Wrapper withTextInputs>
         <EncryptPDF params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "text") {
+    return (
+      <Wrapper withTextInputs>
+        <TextExtractions params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "images") {
+    return (
+      <Wrapper withTextInputs>
+        <ImagesExtractions params={route.params} navigation={navigation} />
+      </Wrapper>
+    );
+  }
+  if (service === "tables") {
+    return (
+      <Wrapper withTextInputs>
+        <TablesExtractions params={route.params} navigation={navigation} />
       </Wrapper>
     );
   }

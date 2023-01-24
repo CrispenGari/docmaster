@@ -19,6 +19,7 @@
     "expo-file-system": "~15.1.1",
     "expo-font": "~11.0.1",
     "expo-intent-launcher": "^10.3.1",
+    "expo-media-library": "~15.0.0",
     "expo-sharing": "~11.0.1",
     "expo-status-bar": "~1.4.2",
     "graphql": "^16.6.0",

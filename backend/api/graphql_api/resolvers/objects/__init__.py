@@ -34,6 +34,12 @@ class DecryptPDFFileType(graphene.ObjectType):
     sessionId = graphene.String(required = True)
     sessionType = graphene.String(required = True)
     documentName = graphene.String(required = True) 
+    
+class ExtractImagesType(graphene.ObjectType):
+    images = graphene.NonNull(graphene.List(graphene.NonNull(graphene.String)))
+    sessionId = graphene.String(required = True)
+    sessionType = graphene.String(required = True)
+    documentName = graphene.String(required = True) 
 class ReducePDFSizeType(graphene.ObjectType):
     url = graphene.String(required = True)
     sessionId = graphene.String(required = True)

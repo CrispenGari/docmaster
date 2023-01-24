@@ -45,3 +45,15 @@ class EncryptPDFInputType(graphene.InputObjectType):
 class DecryptPDFInputType(graphene.InputObjectType):
     file = Upload(required=True)
     password = graphene.String(required = True)
+    
+class ExtractImagesInputType(graphene.InputObjectType):
+    file = Upload(required=True)
+    pageNumber = graphene.Int(required = True)
+    
+class ExtractTablesInputType(graphene.InputObjectType):
+    file = Upload(required=True)
+    pageNumber = graphene.Int(required = True)
+    
+class ExtractTextInputType(graphene.InputObjectType):
+    file = Upload(required=True)
+    pageNumber = graphene.Int(required = True)

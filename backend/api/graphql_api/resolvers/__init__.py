@@ -7,3 +7,4 @@ from .reducepdfsize import *
 from .pdfmerge import *
 from .encryptpdf import *
 from .decryptpdf import *
+from .extractimages import *

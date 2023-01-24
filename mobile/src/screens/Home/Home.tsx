@@ -167,14 +167,35 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
           <IconButton
             Icon={<AntDesign name="table" size={30} color="white" />}
             title="Extract table from PDF"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "Extract Tables",
+                nFiles: 1,
+                service: "tables",
+              });
+            }}
           />
           <IconButton
             Icon={<Entypo name="images" size={30} color="white" />}
             title="Extract images from PDF"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "Extract Images",
+                nFiles: 1,
+                service: "images",
+              });
+            }}
           />
           <IconButton
             Icon={<Entypo name="text" size={30} color="white" />}
             title="Extract TEXT from PDF"
+            onPress={() => {
+              navigation.navigate("FilePicker", {
+                headerTitle: "Extract Text",
+                nFiles: 1,
+                service: "text",
+              });
+            }}
           />
         </ScrollView>
       </View>

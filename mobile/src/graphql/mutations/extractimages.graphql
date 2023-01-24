@@ -1,0 +1,14 @@
+mutation ExtractImages($input: ExtractImagesInputType!) {
+  extractImages(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      images
+      sessionId
+      sessionType
+      documentName
+    }
+  }
+}

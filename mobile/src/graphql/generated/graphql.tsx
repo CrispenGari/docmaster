@@ -113,6 +113,26 @@ export type ErrorType = {
   message: Scalars['String'];
 };
 
+export type ExtractImages = {
+  __typename?: 'ExtractImages';
+  error?: Maybe<ErrorType>;
+  response?: Maybe<ExtractImagesType>;
+  success: Scalars['Boolean'];
+};
+
+export type ExtractImagesInputType = {
+  file: Scalars['Upload'];
+  pageNumber: Scalars['Int'];
+};
+
+export type ExtractImagesType = {
+  __typename?: 'ExtractImagesType';
+  documentName: Scalars['String'];
+  images: Array<Scalars['String']>;
+  sessionId: Scalars['String'];
+  sessionType: Scalars['String'];
+};
+
 export type GetPdfMetaData = {
   __typename?: 'GetPDFMetaData';
   error?: Maybe<ErrorType>;
@@ -157,6 +177,7 @@ export type Mutation = {
   decryptPDF?: Maybe<DecryptPdfDocument>;
   deleteSession?: Maybe<DeleteSession>;
   encryptPDF?: Maybe<EncryptPdfDocument>;
+  extractImages?: Maybe<ExtractImages>;
   getPDFMetaData?: Maybe<GetPdfMetaData>;
   mergePDFs?: Maybe<MergePdfFilesMutation>;
   reducePDFSize?: Maybe<ReducePdfSize>;
@@ -185,6 +206,11 @@ export type MutationDeleteSessionArgs = {
 
 export type MutationEncryptPdfArgs = {
   input: EncryptPdfInputType;
+};
+
+
+export type MutationExtractImagesArgs = {
+  input: ExtractImagesInputType;
 };
 
 
@@ -269,6 +295,13 @@ export type EncryptPdfMutationVariables = Exact<{
 
 
 export type EncryptPdfMutation = { __typename?: 'Mutation', encryptPDF?: { __typename?: 'EncryptPDFDocument', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'EncryptPDFFileType', url: string, sessionId: string, sessionType: string, documentName: string } | null } | null };
+
+export type ExtractImagesMutationVariables = Exact<{
+  input: ExtractImagesInputType;
+}>;
+
+
+export type ExtractImagesMutation = { __typename?: 'Mutation', extractImages?: { __typename?: 'ExtractImages', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'ExtractImagesType', images: Array<string>, sessionId: string, sessionType: string, documentName: string } | null } | null };
 
 export type ReadPdfMetaMutationVariables = Exact<{
   input: GetPdfMetaDataInputType;
@@ -431,6 +464,48 @@ export function useEncryptPdfMutation(baseOptions?: Apollo.MutationHookOptions<E
 export type EncryptPdfMutationHookResult = ReturnType<typeof useEncryptPdfMutation>;
 export type EncryptPdfMutationResult = Apollo.MutationResult<EncryptPdfMutation>;
 export type EncryptPdfMutationOptions = Apollo.BaseMutationOptions<EncryptPdfMutation, EncryptPdfMutationVariables>;
+export const ExtractImagesDocument = gql`
+    mutation ExtractImages($input: ExtractImagesInputType!) {
+  extractImages(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      images
+      sessionId
+      sessionType
+      documentName
+    }
+  }
+}
+    ${ErrorFragmentFragmentDoc}`;
+export type ExtractImagesMutationFn = Apollo.MutationFunction<ExtractImagesMutation, ExtractImagesMutationVariables>;
+
+/**
+ * __useExtractImagesMutation__
+ *
+ * To run a mutation, you first call `useExtractImagesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useExtractImagesMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [extractImagesMutation, { data, loading, error }] = useExtractImagesMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useExtractImagesMutation(baseOptions?: Apollo.MutationHookOptions<ExtractImagesMutation, ExtractImagesMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ExtractImagesMutation, ExtractImagesMutationVariables>(ExtractImagesDocument, options);
+      }
+export type ExtractImagesMutationHookResult = ReturnType<typeof useExtractImagesMutation>;
+export type ExtractImagesMutationResult = Apollo.MutationResult<ExtractImagesMutation>;
+export type ExtractImagesMutationOptions = Apollo.BaseMutationOptions<ExtractImagesMutation, ExtractImagesMutationVariables>;
 export const ReadPdfMetaDocument = gql`
     mutation ReadPDFMeta($input: GetPDFMetaDataInputType!) {
   getPDFMetaData(input: $input) {
