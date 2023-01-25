@@ -1,6 +1,7 @@
 import graphene
 from graphql_api.resolvers.inputs import *
 from graphql_api.resolvers.objects import *
+from graphql_api.resolvers.utils import *
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import uuid
@@ -51,8 +52,8 @@ class GetPDFMetaData(graphene.Mutation):
                     author = _author,
                     producer = _producer,
                     creator = _creator,
-                    createdAt = _createdAt,
-                    modifiedAt = _modifiedAt,
+                    createdAt = date_object(_createdAt),
+                    modifiedAt = date_object(_modifiedAt),
                     pageLayout = _pageLayout,
                     pageLabels = _pageLabels,
                     isLocked = _isLocked,
@@ -80,23 +81,17 @@ class SetPDFMetaData(graphene.Mutation):
     
     def mutate(self, info, input, **kwargs):
         try:
-            if input.saveName:
-                # if the user does not give us a savename
-                saveName = input.saveName if input.saveName.split('.')[-1].lower() == "pdf" else input.saveName + '.pdf'
-            else:
-                # then we use a original document name
-                saveName = "".join(str(file.name).split('.')[:-1]) + ".docx"
-            
             file = input.file
             if "." + file.name.split('.')[-1].lower() != ".pdf":
-                return GetPDFMetaData(
+                return EncryptPDFFileType(
                      success = False,
                      error = ErrorType(
                          field = "extension",
                          message = f"Document type not supported allowed extensions are ({', '.join(['.pdf'])})."
                      )
                 )
-                
+            saveName = input.saveName if input.saveName else file.name
+
             sessionId = str(uuid.uuid4())[:5]
             sessionPath = os.path.join(temp_path, 'pdfmeta', sessionId)
             if not os.path.exists(sessionPath):
@@ -104,32 +99,36 @@ class SetPDFMetaData(graphene.Mutation):
            
             _file_fom_client_save_path = os.path.join(sessionPath, file.name)
             default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
-            
-            reader = pypdf.PdfReader(_file_fom_client_save_path)
-            writer = pypdf.PdfWriter()
-            for page in reader.pages:
-                writer.add_page(page)
-            
-            writer.add_metadata({
-                "/Author": input.author,
-                "/Producer": input.producer,
-                '/Creator': input.creator,
-                '/CreationDate': input.createdAt,
-                '/ModDate': input.updatedAt
-            })
-            
-            with open(_file_fom_client_save_path, "wb") as f:
-                writer.write(f)
-                
-            _file_fom_client_save_path = os.path.join(sessionPath, saveName)
             reader = pypdf.PdfReader(_file_fom_client_save_path)
             
-            _pages = len(reader.pages)
             _author = reader.metadata.get('/Author')
             _producer = reader.metadata.get('/Producer')
             _creator = reader.metadata.get('/Creator')
             _createdAt = reader.metadata.get('/CreationDate')
             _modifiedAt = reader.metadata.get('/ModDate')
+            
+            author = input.author if input.author else _author
+            producer = input.producer if input.producer else _producer
+            creator = input.creator if input.creator else _creator
+            # createdAt = input.createdAt if input.createdAt else _createdAt
+            # updatedAt = input.modifiedAt if input.modifiedAt else _modifiedAt
+            
+            writer = pypdf.PdfWriter()
+            for page in reader.pages:
+                writer.add_page(page)
+            
+            writer.add_metadata({
+                "/Author":  author,
+                "/Producer":  producer,
+                '/Creator':  creator,
+                '/CreationDate':  _createdAt,
+                '/ModDate':  _modifiedAt
+            })
+            
+            with open(os.path.join(sessionPath, saveName), "wb") as f:
+                writer.write(f)
+        
+            _pages = len(reader.pages)
             _pageLayout = reader.page_layout
             _pageLabels = reader.page_labels
             _pageMode = reader.page_mode
@@ -138,22 +137,22 @@ class SetPDFMetaData(graphene.Mutation):
             
             return SetPDFMetaData(
                 success = True,
-                response = PDFMetaDataType(
+                response = SetPDFMetaDataType(
                     sessionId = sessionId,
                     sessionType = "pdfmeta",
                     pages = _pages,
-                    author = _author,
-                    producer = _producer,
-                    creator = _creator,
-                    createdAt = _createdAt,
-                    modifiedAt = _modifiedAt,
+                    author = author,
+                    producer = producer,
+                    creator = creator,
+                    createdAt = date_object(_createdAt),
+                    modifiedAt = date_object(_modifiedAt),
                     pageLayout = _pageLayout,
                     pageLabels = _pageLabels,
                     isLocked = _isLocked,
                     pageMode = _pageMode,
                     pdfHeader = _pdfHeader,
-                    documentName = file.name,
-                    url = f"http://127.0.0.1:3001/temp/files/pdf2docx/{sessionId}/{saveName.replace(' ', '%20')}"
+                    documentName = saveName,
+                    url = f"http://127.0.0.1:3001/temp/files/pdfmeta/{sessionId}/{saveName.replace(' ', '%20')}"
                 )
             )
         except Exception as e:
