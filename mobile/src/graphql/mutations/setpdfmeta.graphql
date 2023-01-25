@@ -1,0 +1,19 @@
+mutation SetPDFMeta($input: SetPDFMetaDataInputType!) {
+  setMetaData(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      url
+      sessionId
+      sessionType
+      pages
+      author
+      producer
+      createdAt
+      modifiedAt
+      pages
+    }
+  }
+}

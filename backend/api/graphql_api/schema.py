@@ -11,7 +11,8 @@ class Mutation(graphene.ObjectType):
     encryptPDF = EncryptPDFDocument.Field()
     decryptPDF = DecryptPDFDocument.Field()
     extractImages = ExtractImages.Field()
-    SetPDFMetaData = SetPDFMetaData.Field()
+    setMetaData = SetPDFMetaData.Field()
+    createSession = CreateSession.Field()
 
 class Query(graphene.ObjectType):
     hello = graphene.String()

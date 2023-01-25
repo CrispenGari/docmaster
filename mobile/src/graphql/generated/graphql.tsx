@@ -19,6 +19,7 @@ export type Scalars = {
 export type ConvertPdfToWordDocInputType = {
   file: Scalars['Upload'];
   saveName?: InputMaybe<Scalars['String']>;
+  sessionId: Scalars['String'];
 };
 
 export type ConvertPdfToWordDocType = {
@@ -39,6 +40,7 @@ export type ConvertPdfToWordDocument = {
 export type ConvertWordDocToPdfInputType = {
   file: Scalars['Upload'];
   saveName?: InputMaybe<Scalars['String']>;
+  sessionId: Scalars['String'];
 };
 
 export type ConvertWordDocToPdfType = {
@@ -53,6 +55,13 @@ export type ConvertWordDocumentToPdf = {
   __typename?: 'ConvertWordDocumentToPDF';
   error?: Maybe<ErrorType>;
   response?: Maybe<ConvertWordDocToPdfType>;
+  success: Scalars['Boolean'];
+};
+
+export type CreateSession = {
+  __typename?: 'CreateSession';
+  error?: Maybe<ErrorType>;
+  sessionId?: Maybe<Scalars['String']>;
   success: Scalars['Boolean'];
 };
 
@@ -74,6 +83,7 @@ export type DecryptPdfFileType = {
 export type DecryptPdfInputType = {
   file: Scalars['Upload'];
   password: Scalars['String'];
+  sessionId: Scalars['String'];
 };
 
 export type DeleteSession = {
@@ -84,7 +94,6 @@ export type DeleteSession = {
 
 export type DeleteSessionInputType = {
   sessionId: Scalars['String'];
-  sessionType: Scalars['String'];
 };
 
 export type EncryptPdfDocument = {
@@ -105,6 +114,7 @@ export type EncryptPdfFileType = {
 export type EncryptPdfInputType = {
   file: Scalars['Upload'];
   password: Scalars['String'];
+  sessionId: Scalars['String'];
 };
 
 export type ErrorType = {
@@ -123,6 +133,7 @@ export type ExtractImages = {
 export type ExtractImagesInputType = {
   file: Scalars['Upload'];
   pageNumber: Scalars['Int'];
+  sessionId: Scalars['String'];
 };
 
 export type ExtractImagesType = {
@@ -142,11 +153,13 @@ export type GetPdfMetaData = {
 
 export type GetPdfMetaDataInputType = {
   file: Scalars['Upload'];
+  sessionId: Scalars['String'];
 };
 
 export type MergePdfFilesInputType = {
   pdfs: Array<MergePdfInputType>;
   saveName: Scalars['String'];
+  sessionId: Scalars['String'];
 };
 
 export type MergePdfFilesMutation = {
@@ -168,12 +181,14 @@ export type MergePdfInputType = {
   documentNumber: Scalars['Int'];
   file: Scalars['Upload'];
   pages: Array<InputMaybe<Scalars['Int']>>;
+  sessionId: Scalars['String'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
   convertDocToPDF?: Maybe<ConvertWordDocumentToPdf>;
   convertPDFToDocx?: Maybe<ConvertPdfToWordDocument>;
+  createSession?: Maybe<CreateSession>;
   decryptPDF?: Maybe<DecryptPdfDocument>;
   deleteSession?: Maybe<DeleteSession>;
   encryptPDF?: Maybe<EncryptPdfDocument>;
@@ -181,6 +196,7 @@ export type Mutation = {
   getPDFMetaData?: Maybe<GetPdfMetaData>;
   mergePDFs?: Maybe<MergePdfFilesMutation>;
   reducePDFSize?: Maybe<ReducePdfSize>;
+  setMetaData?: Maybe<SetPdfMetaData>;
 };
 
 
@@ -228,6 +244,11 @@ export type MutationReducePdfSizeArgs = {
   input: ReducePdfSizeInputType;
 };
 
+
+export type MutationSetMetaDataArgs = {
+  input: SetPdfMetaDataInputType;
+};
+
 export type PdfMetaDataType = {
   __typename?: 'PDFMetaDataType';
   author?: Maybe<Scalars['String']>;
@@ -261,6 +282,7 @@ export type ReducePdfSize = {
 export type ReducePdfSizeInputType = {
   file: Scalars['Upload'];
   saveName?: InputMaybe<Scalars['String']>;
+  sessionId: Scalars['String'];
 };
 
 export type ReducePdfSizeType = {
@@ -273,7 +295,49 @@ export type ReducePdfSizeType = {
   url: Scalars['String'];
 };
 
+export type SetPdfMetaData = {
+  __typename?: 'SetPDFMetaData';
+  error?: Maybe<ErrorType>;
+  response?: Maybe<SetPdfMetaDataType>;
+  success: Scalars['Boolean'];
+};
+
+export type SetPdfMetaDataInputType = {
+  author?: InputMaybe<Scalars['String']>;
+  createdAt?: InputMaybe<Scalars['String']>;
+  creator?: InputMaybe<Scalars['String']>;
+  file: Scalars['Upload'];
+  producer?: InputMaybe<Scalars['String']>;
+  saveName?: InputMaybe<Scalars['String']>;
+  sessionId: Scalars['String'];
+  updatedAt?: InputMaybe<Scalars['String']>;
+};
+
+export type SetPdfMetaDataType = {
+  __typename?: 'SetPDFMetaDataType';
+  author?: Maybe<Scalars['String']>;
+  createdAt?: Maybe<Scalars['String']>;
+  creator?: Maybe<Scalars['String']>;
+  documentName: Scalars['String'];
+  isLocked?: Maybe<Scalars['Boolean']>;
+  modifiedAt?: Maybe<Scalars['String']>;
+  pageLabels?: Maybe<Array<Maybe<Scalars['Int']>>>;
+  pageLayout?: Maybe<Scalars['String']>;
+  pageMode?: Maybe<Scalars['String']>;
+  pages?: Maybe<Scalars['Int']>;
+  pdfHeader?: Maybe<Scalars['String']>;
+  producer?: Maybe<Scalars['String']>;
+  sessionId: Scalars['String'];
+  sessionType: Scalars['String'];
+  url: Scalars['String'];
+};
+
 export type ErrorFragmentFragment = { __typename?: 'ErrorType', message: string, field: string };
+
+export type CreateSessionMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CreateSessionMutation = { __typename?: 'Mutation', createSession?: { __typename?: 'CreateSession', success: boolean, sessionId?: string | null, error?: { __typename?: 'ErrorType', message: string, field: string } | null } | null };
 
 export type DecryptPdfMutationVariables = Exact<{
   input: DecryptPdfInputType;
@@ -331,6 +395,13 @@ export type ReducePdfSizeMutationVariables = Exact<{
 
 export type ReducePdfSizeMutation = { __typename?: 'Mutation', reducePDFSize?: { __typename?: 'ReducePDFSize', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'ReducePDFSizeType', url: string, sessionId: string, sessionType: string, documentName: string, inputSize: string, outputSize: string } | null } | null };
 
+export type SetPdfMetaMutationVariables = Exact<{
+  input: SetPdfMetaDataInputType;
+}>;
+
+
+export type SetPdfMetaMutation = { __typename?: 'Mutation', setMetaData?: { __typename?: 'SetPDFMetaData', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'SetPDFMetaDataType', url: string, sessionId: string, sessionType: string, pages?: number | null, author?: string | null, producer?: string | null, createdAt?: string | null, modifiedAt?: string | null } | null } | null };
+
 export type ConvertWord2PdfMutationVariables = Exact<{
   input: ConvertWordDocToPdfInputType;
 }>;
@@ -344,6 +415,42 @@ export const ErrorFragmentFragmentDoc = gql`
   field
 }
     `;
+export const CreateSessionDocument = gql`
+    mutation CreateSession {
+  createSession {
+    error {
+      ...ErrorFragment
+    }
+    success
+    sessionId
+  }
+}
+    ${ErrorFragmentFragmentDoc}`;
+export type CreateSessionMutationFn = Apollo.MutationFunction<CreateSessionMutation, CreateSessionMutationVariables>;
+
+/**
+ * __useCreateSessionMutation__
+ *
+ * To run a mutation, you first call `useCreateSessionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateSessionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createSessionMutation, { data, loading, error }] = useCreateSessionMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCreateSessionMutation(baseOptions?: Apollo.MutationHookOptions<CreateSessionMutation, CreateSessionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateSessionMutation, CreateSessionMutationVariables>(CreateSessionDocument, options);
+      }
+export type CreateSessionMutationHookResult = ReturnType<typeof useCreateSessionMutation>;
+export type CreateSessionMutationResult = Apollo.MutationResult<CreateSessionMutation>;
+export type CreateSessionMutationOptions = Apollo.BaseMutationOptions<CreateSessionMutation, CreateSessionMutationVariables>;
 export const DecryptPdfDocument = gql`
     mutation DecryptPDF($input: DecryptPDFInputType!) {
   decryptPDF(input: $input) {
@@ -687,6 +794,53 @@ export function useReducePdfSizeMutation(baseOptions?: Apollo.MutationHookOption
 export type ReducePdfSizeMutationHookResult = ReturnType<typeof useReducePdfSizeMutation>;
 export type ReducePdfSizeMutationResult = Apollo.MutationResult<ReducePdfSizeMutation>;
 export type ReducePdfSizeMutationOptions = Apollo.BaseMutationOptions<ReducePdfSizeMutation, ReducePdfSizeMutationVariables>;
+export const SetPdfMetaDocument = gql`
+    mutation SetPDFMeta($input: SetPDFMetaDataInputType!) {
+  setMetaData(input: $input) {
+    error {
+      ...ErrorFragment
+    }
+    success
+    response {
+      url
+      sessionId
+      sessionType
+      pages
+      author
+      producer
+      createdAt
+      modifiedAt
+      pages
+    }
+  }
+}
+    ${ErrorFragmentFragmentDoc}`;
+export type SetPdfMetaMutationFn = Apollo.MutationFunction<SetPdfMetaMutation, SetPdfMetaMutationVariables>;
+
+/**
+ * __useSetPdfMetaMutation__
+ *
+ * To run a mutation, you first call `useSetPdfMetaMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetPdfMetaMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setPdfMetaMutation, { data, loading, error }] = useSetPdfMetaMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useSetPdfMetaMutation(baseOptions?: Apollo.MutationHookOptions<SetPdfMetaMutation, SetPdfMetaMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetPdfMetaMutation, SetPdfMetaMutationVariables>(SetPdfMetaDocument, options);
+      }
+export type SetPdfMetaMutationHookResult = ReturnType<typeof useSetPdfMetaMutation>;
+export type SetPdfMetaMutationResult = Apollo.MutationResult<SetPdfMetaMutation>;
+export type SetPdfMetaMutationOptions = Apollo.BaseMutationOptions<SetPdfMetaMutation, SetPdfMetaMutationVariables>;
 export const ConvertWord2PdfDocument = gql`
     mutation ConvertWord2PDF($input: ConvertWordDocToPDFInputType!) {
   convertDocToPDF(input: $input) {

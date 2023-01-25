@@ -7,7 +7,7 @@ import { ServicesType } from "../../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
-import { generateRNFile } from "../../utils";
+import { generateRNFile, getSessionId } from "../../utils";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
@@ -39,13 +39,15 @@ const Word2PDF: React.FunctionComponent<Props> = ({ params, navigation }) => {
       name: doc.name,
       uri: doc.uri,
     });
-    if (!file) {
+    const sid = await getSessionId();
+    if (!file || !!!sid) {
       return;
     }
     await convert({
       variables: {
         input: {
           file,
+          sessionId: sid,
         },
       },
     });

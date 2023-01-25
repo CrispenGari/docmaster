@@ -4,7 +4,6 @@ from graphql_api.resolvers.objects import *
 from graphql_api.resolvers.utils import *
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-import uuid
 import pypdf
 import os
 
@@ -31,6 +30,16 @@ class GetPDFMetaData(graphene.Mutation):
                      )
                 )
             reader = pypdf.PdfReader(ContentFile(file.read()))
+            
+            if reader.is_encrypted:
+                return SetPDFMetaData(
+                    success = False,
+                    error = ErrorType(
+                        field = 'server',
+                        message = 'Can not Read Meta data on a locked document.'
+                    )
+                )
+                
             _pages = len(reader.pages)
             _author = reader.metadata.get('/Author')
             _producer = reader.metadata.get('/Producer')
@@ -92,7 +101,7 @@ class SetPDFMetaData(graphene.Mutation):
                 )
             saveName = input.saveName if input.saveName else file.name
 
-            sessionId = str(uuid.uuid4())[:5]
+            sessionId = input.sessionId
             sessionPath = os.path.join(temp_path, 'pdfmeta', sessionId)
             if not os.path.exists(sessionPath):
                 os.makedirs(sessionPath)
@@ -101,6 +110,14 @@ class SetPDFMetaData(graphene.Mutation):
             default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
             reader = pypdf.PdfReader(_file_fom_client_save_path)
             
+            if reader.is_encrypted:
+                return SetPDFMetaData(
+                    success = False,
+                    error = ErrorType(
+                        field = 'server',
+                        message = 'Can not Set Meta data on a locked document.'
+                    )
+                )
             _author = reader.metadata.get('/Author')
             _producer = reader.metadata.get('/Producer')
             _creator = reader.metadata.get('/Creator')

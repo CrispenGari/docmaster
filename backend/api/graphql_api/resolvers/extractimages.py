@@ -31,7 +31,7 @@ class ExtractImages(graphene.Mutation):
                      )
             )
             
-            sessionId = str(uuid.uuid4())[:5]
+            sessionId = input.sessionId
             sessionPath = os.path.join(temp_path, 'extractimages', sessionId)
             if not os.path.exists(sessionPath):
                 os.makedirs(sessionPath)

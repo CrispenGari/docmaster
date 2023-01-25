@@ -1,4 +1,11 @@
-import { ScrollView, View, Image, SafeAreaView, Text } from "react-native";
+import {
+  ScrollView,
+  View,
+  Image,
+  SafeAreaView,
+  Text,
+  Alert,
+} from "react-native";
 import React from "react";
 import { AppNavProps } from "../../params";
 import { COLORS, FONTS } from "../../constants";
@@ -82,6 +89,19 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
               />
             }
             title="PDF Annotations"
+            onPress={() => {
+              Alert.alert(
+                "docmaster",
+                "PDF Annotations are currently unavailable for this version.",
+                [
+                  {
+                    text: "OK",
+                    style: "default",
+                  },
+                ],
+                { cancelable: false }
+              );
+            }}
           />
           <IconButton
             Icon={
@@ -92,6 +112,19 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
               />
             }
             title="PDF Watermarks"
+            onPress={() => {
+              Alert.alert(
+                "docmaster",
+                "PDF Watermarks are currently unavailable for this version.",
+                [
+                  {
+                    text: "OK",
+                    style: "default",
+                  },
+                ],
+                { cancelable: false }
+              );
+            }}
           />
         </ScrollView>
       </View>
@@ -128,7 +161,7 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
               navigation.navigate("FilePicker", {
                 headerTitle: "Word Document to PDF Document",
                 nFiles: 1,
-                service: "2word",
+                service: "2pdf",
               });
             }}
           />
@@ -165,17 +198,6 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
         >
           <IconButton
-            Icon={<AntDesign name="table" size={30} color="white" />}
-            title="Extract table from PDF"
-            onPress={() => {
-              navigation.navigate("FilePicker", {
-                headerTitle: "Extract Tables",
-                nFiles: 1,
-                service: "tables",
-              });
-            }}
-          />
-          <IconButton
             Icon={<Entypo name="images" size={30} color="white" />}
             title="Extract images from PDF"
             onPress={() => {
@@ -190,11 +212,17 @@ const Home: React.FunctionComponent<AppNavProps<"Home">> = ({ navigation }) => {
             Icon={<Entypo name="text" size={30} color="white" />}
             title="Extract TEXT from PDF"
             onPress={() => {
-              navigation.navigate("FilePicker", {
-                headerTitle: "Extract Text",
-                nFiles: 1,
-                service: "text",
-              });
+              Alert.alert(
+                "docmaster",
+                "PDF Text Extraction is currently unavailable for this version.",
+                [
+                  {
+                    text: "OK",
+                    style: "default",
+                  },
+                ],
+                { cancelable: false }
+              );
             }}
           />
         </ScrollView>

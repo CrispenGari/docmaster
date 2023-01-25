@@ -4,7 +4,6 @@ from graphql_api.resolvers.objects import *
 from graphql_api.resolvers.utils import *
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-import uuid
 import os
 import pypdf
 
@@ -37,7 +36,7 @@ class ReducePDFSize(graphene.Mutation):
                      )
                 )
             
-            sessionId = str(uuid.uuid4())[:5]
+            sessionId = input.sessionId
             sessionPath = os.path.join(temp_path, 'reducepdfsize', sessionId)
             if not os.path.exists(sessionPath):
                 os.makedirs(sessionPath)
@@ -46,6 +45,14 @@ class ReducePDFSize(graphene.Mutation):
             default_storage.save(_file_fom_client_save_path, ContentFile(file.read()))
             
             reader = pypdf.PdfReader(_file_fom_client_save_path)
+            if reader.is_encrypted:
+                return ReducePDFSize(
+                    success = False,
+                    error = ErrorType(
+                        field = 'server',
+                        message = 'Can not reduce the PDF size on a locked document.'
+                    )
+                )
             writer = pypdf.PdfWriter()
             
             inputSize = convert_size(os.path.getsize(_file_fom_client_save_path))

@@ -3,7 +3,6 @@ from graphql_api.resolvers.inputs import *
 from graphql_api.resolvers.objects import *
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-import uuid
 import os
 import pypdf
 import operator
@@ -24,7 +23,7 @@ class MergePDFFilesMutation(graphene.Mutation):
             saveName = input.saveName if input.saveName.split('.')[-1].lower() == "pdf" else input.saveName + '.pdf'
             sortedFiles = list(sorted(files, key=operator.itemgetter('documentNumber')))
            
-            sessionId = str(uuid.uuid4())[:5]
+            sessionId = input.sessionId
             sessionPath = os.path.join(temp_path, 'pdfmerge', sessionId)
             if not os.path.exists(sessionPath):
                 os.makedirs(sessionPath)

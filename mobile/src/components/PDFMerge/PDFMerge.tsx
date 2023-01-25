@@ -8,7 +8,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
 import { useMergePdFsMutation } from "../../graphql/generated/graphql";
-import { generateRNFile } from "../../utils";
+import { generateRNFile, getSessionId } from "../../utils";
 import { AntDesign, Entypo, MaterialIcons } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
@@ -85,9 +85,13 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
       );
       return;
     }
+    const sid = await getSessionId();
+
     if (documentsToMerge.length === 0) {
       return;
     }
+    if (!!!sid) return;
+
     await merge({
       variables: {
         input: {
@@ -100,9 +104,11 @@ const PDFMerge: React.FunctionComponent<Props> = ({ params, navigation }) => {
               }),
               pages: pages,
               documentNumber: id,
+              sessionId: sid,
             })),
           ],
           saveName: outputName,
+          sessionId: sid,
         },
       },
     });

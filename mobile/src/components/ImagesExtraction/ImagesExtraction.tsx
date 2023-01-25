@@ -9,7 +9,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
 import { useExtractImagesMutation } from "../../graphql/generated/graphql";
-import { generateRNFile } from "../../utils";
+import { generateRNFile, getSessionId } from "../../utils";
 import { AntDesign, Octicons } from "@expo/vector-icons";
 import CustomTextInput from "../CustomTextInput/CustomTextInput";
 import ExtractedImage from "../ExtractedImage/ExtractedImage";
@@ -39,7 +39,8 @@ const ImagesExtractions: React.FunctionComponent<Props> = ({
       name: doc.name,
       uri: doc.uri,
     });
-    if (!file) {
+    const sid = await getSessionId();
+    if (!file || !!!sid) {
       return;
     }
     const _pageNumber: number = Number.parseInt(pageNumber);
@@ -52,6 +53,7 @@ const ImagesExtractions: React.FunctionComponent<Props> = ({
         input: {
           file,
           pageNumber: _pageNumber,
+          sessionId: sid,
         },
       },
     });

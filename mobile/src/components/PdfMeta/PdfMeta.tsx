@@ -8,7 +8,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
 import { useReadPdfMetaMutation } from "../../graphql/generated/graphql";
-import { generateRNFile } from "../../utils";
+import { generateRNFile, getSessionId } from "../../utils";
 
 interface Props {
   params: Readonly<{
@@ -37,13 +37,15 @@ const PdfMeta: React.FunctionComponent<Props> = ({ params, navigation }) => {
       name: getMetaDataDocument.name,
       uri: getMetaDataDocument.uri,
     });
-    if (!file) {
+    const sid = await getSessionId();
+    if (!file || !!!sid) {
       return;
     }
     await _readMetaData({
       variables: {
         input: {
           file,
+          sessionId: sid,
         },
       },
     });

@@ -8,7 +8,7 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { AppParamList } from "../../params";
 import DoubleCircular from "../DoubleCircularIndicator/DoubleCircularIndicator";
 import { useReducePdfSizeMutation } from "../../graphql/generated/graphql";
-import { generateRNFile } from "../../utils";
+import { generateRNFile, getSessionId } from "../../utils";
 import { AntDesign, Entypo } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system";
@@ -41,13 +41,15 @@ const TextExtractions: React.FunctionComponent<Props> = ({
       name: doc.name,
       uri: doc.uri,
     });
-    if (!file) {
+    const sid = await getSessionId();
+    if (!file || !!!sid) {
       return;
     }
     await compress({
       variables: {
         input: {
           file,
+          sessionId: sid,
         },
       },
     });

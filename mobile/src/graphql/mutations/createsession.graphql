@@ -1,0 +1,9 @@
+mutation CreateSession {
+  createSession {
+    error {
+      ...ErrorFragment
+    }
+    success
+    sessionId
+  }
+}

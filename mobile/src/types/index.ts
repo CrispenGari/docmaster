@@ -16,5 +16,6 @@ export type ServicesType =
   | "encrypt"
   | "decrypt"
   | "images"
-  | "tables"
-  | "text";
+  | "text"
+  | "annotations"
+  | "watermarks";

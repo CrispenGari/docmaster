@@ -3,7 +3,6 @@ from graphql_api.resolvers.inputs import *
 from graphql_api.resolvers.objects import *
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-import uuid
 import os
 import pypdf
 
@@ -31,7 +30,7 @@ class DecryptPDFDocument(graphene.Mutation):
                      )
             )
             
-            sessionId = str(uuid.uuid4())[:5]
+            sessionId = input.sessionId
             sessionPath = os.path.join(temp_path, 'decryptpdf', sessionId)
             if not os.path.exists(sessionPath):
                 os.makedirs(sessionPath)
