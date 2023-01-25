@@ -77,7 +77,7 @@ class GetPDFMetaData(graphene.Mutation):
                 success = False,
                 error = ErrorType(
                     field = 'server',
-                    message = 'Something went wrong during converting file to PDF.'
+                    message = 'Something went wrong while reading meta data.'
                 )
             )
             
@@ -123,6 +123,12 @@ class SetPDFMetaData(graphene.Mutation):
             _creator = reader.metadata.get('/Creator')
             _createdAt = reader.metadata.get('/CreationDate')
             _modifiedAt = reader.metadata.get('/ModDate')
+            _pages = len(reader.pages)
+            _pageLayout = reader.page_layout
+            _pageLabels = reader.page_labels
+            _pageMode = reader.page_mode
+            _isLocked = reader.is_encrypted
+            _pdfHeader = reader.pdf_header
             
             author = input.author if input.author else _author
             producer = input.producer if input.producer else _producer
@@ -144,13 +150,7 @@ class SetPDFMetaData(graphene.Mutation):
             
             with open(os.path.join(sessionPath, saveName), "wb") as f:
                 writer.write(f)
-        
-            _pages = len(reader.pages)
-            _pageLayout = reader.page_layout
-            _pageLabels = reader.page_labels
-            _pageMode = reader.page_mode
-            _isLocked = reader.is_encrypted
-            _pdfHeader = reader.pdf_header
+    
             
             return SetPDFMetaData(
                 success = True,
@@ -178,6 +178,6 @@ class SetPDFMetaData(graphene.Mutation):
                 success = False,
                 error = ErrorType(
                     field = 'server',
-                    message = 'Something went wrong during converting file to PDF.'
+                    message = 'Something went wrong while creating setting meta data to a PDF document.'
                 )
             )

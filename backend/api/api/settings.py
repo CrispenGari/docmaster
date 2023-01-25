@@ -17,7 +17,7 @@ DEBUG = True
 
 APPEND_SLASH = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'c4f3-41-246-130-111.ngrok.io']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '57e6-41-246-130-159.ngrok.io']
 
 
 # Application definition

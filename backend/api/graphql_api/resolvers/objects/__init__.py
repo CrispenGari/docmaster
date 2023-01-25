@@ -64,6 +64,10 @@ class PDFMetaDataType(graphene.ObjectType):
     pdfHeader = graphene.String(required = False)
     documentName = graphene.String(required = True)
 
+class PDFMetaResponse(graphene.ObjectType):
+    response = graphene.Field(PDFMetaDataType, required=False)
+    success = graphene.Boolean(required = True)
+    error = graphene.Field(ErrorType, required=False)
 
 class SetPDFMetaDataType(graphene.ObjectType):
     url = graphene.String(required = True)
