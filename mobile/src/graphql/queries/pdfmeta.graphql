@@ -1,0 +1,24 @@
+query GetPDFMetaData($input: GetPDFMetaDataInputType!) {
+  meta(input: $input) {
+    success
+    error {
+      ...ErrorFragment
+    }
+    response {
+      sessionId
+      sessionType
+      documentName
+      pages
+      author
+      producer
+      creator
+      createdAt
+      modifiedAt
+      pageLayout
+      pageLabels
+      isLocked
+      pdfHeader
+      pageMode
+    }
+  }
+}

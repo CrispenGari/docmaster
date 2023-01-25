@@ -267,9 +267,22 @@ export type PdfMetaDataType = {
   sessionType: Scalars['String'];
 };
 
+export type PdfMetaResponse = {
+  __typename?: 'PDFMetaResponse';
+  error?: Maybe<ErrorType>;
+  response?: Maybe<PdfMetaDataType>;
+  success: Scalars['Boolean'];
+};
+
 export type Query = {
   __typename?: 'Query';
   hello?: Maybe<Scalars['String']>;
+  meta?: Maybe<PdfMetaResponse>;
+};
+
+
+export type QueryMetaArgs = {
+  input: GetPdfMetaDataInputType;
 };
 
 export type ReducePdfSize = {
@@ -400,7 +413,7 @@ export type SetPdfMetaMutationVariables = Exact<{
 }>;
 
 
-export type SetPdfMetaMutation = { __typename?: 'Mutation', setMetaData?: { __typename?: 'SetPDFMetaData', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'SetPDFMetaDataType', url: string, sessionId: string, sessionType: string, pages?: number | null, author?: string | null, producer?: string | null, createdAt?: string | null, modifiedAt?: string | null } | null } | null };
+export type SetPdfMetaMutation = { __typename?: 'Mutation', setMetaData?: { __typename?: 'SetPDFMetaData', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'SetPDFMetaDataType', url: string, sessionId: string, sessionType: string, pages?: number | null, author?: string | null, producer?: string | null, createdAt?: string | null, modifiedAt?: string | null, creator?: string | null, documentName: string } | null } | null };
 
 export type ConvertWord2PdfMutationVariables = Exact<{
   input: ConvertWordDocToPdfInputType;
@@ -408,6 +421,13 @@ export type ConvertWord2PdfMutationVariables = Exact<{
 
 
 export type ConvertWord2PdfMutation = { __typename?: 'Mutation', convertDocToPDF?: { __typename?: 'ConvertWordDocumentToPDF', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'ConvertWordDocToPDFType', url: string, sessionId: string, sessionType: string, documentName: string } | null } | null };
+
+export type GetPdfMetaDataQueryVariables = Exact<{
+  input: GetPdfMetaDataInputType;
+}>;
+
+
+export type GetPdfMetaDataQuery = { __typename?: 'Query', meta?: { __typename?: 'PDFMetaResponse', success: boolean, error?: { __typename?: 'ErrorType', message: string, field: string } | null, response?: { __typename?: 'PDFMetaDataType', sessionId: string, sessionType: string, documentName: string, pages?: number | null, author?: string | null, producer?: string | null, creator?: string | null, createdAt?: string | null, modifiedAt?: string | null, pageLayout?: string | null, pageLabels?: Array<number | null> | null, isLocked?: boolean | null, pdfHeader?: string | null, pageMode?: string | null } | null } | null };
 
 export const ErrorFragmentFragmentDoc = gql`
     fragment ErrorFragment on ErrorType {
@@ -810,7 +830,8 @@ export const SetPdfMetaDocument = gql`
       producer
       createdAt
       modifiedAt
-      pages
+      creator
+      documentName
     }
   }
 }
@@ -883,6 +904,60 @@ export function useConvertWord2PdfMutation(baseOptions?: Apollo.MutationHookOpti
 export type ConvertWord2PdfMutationHookResult = ReturnType<typeof useConvertWord2PdfMutation>;
 export type ConvertWord2PdfMutationResult = Apollo.MutationResult<ConvertWord2PdfMutation>;
 export type ConvertWord2PdfMutationOptions = Apollo.BaseMutationOptions<ConvertWord2PdfMutation, ConvertWord2PdfMutationVariables>;
+export const GetPdfMetaDataDocument = gql`
+    query GetPDFMetaData($input: GetPDFMetaDataInputType!) {
+  meta(input: $input) {
+    success
+    error {
+      ...ErrorFragment
+    }
+    response {
+      sessionId
+      sessionType
+      documentName
+      pages
+      author
+      producer
+      creator
+      createdAt
+      modifiedAt
+      pageLayout
+      pageLabels
+      isLocked
+      pdfHeader
+      pageMode
+    }
+  }
+}
+    ${ErrorFragmentFragmentDoc}`;
+
+/**
+ * __useGetPdfMetaDataQuery__
+ *
+ * To run a query within a React component, call `useGetPdfMetaDataQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPdfMetaDataQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPdfMetaDataQuery({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useGetPdfMetaDataQuery(baseOptions: Apollo.QueryHookOptions<GetPdfMetaDataQuery, GetPdfMetaDataQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPdfMetaDataQuery, GetPdfMetaDataQueryVariables>(GetPdfMetaDataDocument, options);
+      }
+export function useGetPdfMetaDataLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPdfMetaDataQuery, GetPdfMetaDataQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPdfMetaDataQuery, GetPdfMetaDataQueryVariables>(GetPdfMetaDataDocument, options);
+        }
+export type GetPdfMetaDataQueryHookResult = ReturnType<typeof useGetPdfMetaDataQuery>;
+export type GetPdfMetaDataLazyQueryHookResult = ReturnType<typeof useGetPdfMetaDataLazyQuery>;
+export type GetPdfMetaDataQueryResult = Apollo.QueryResult<GetPdfMetaDataQuery, GetPdfMetaDataQueryVariables>;
 
       export interface PossibleTypesResultData {
         possibleTypes: {

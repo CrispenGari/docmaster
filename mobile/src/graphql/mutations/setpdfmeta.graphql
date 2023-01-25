@@ -13,7 +13,8 @@ mutation SetPDFMeta($input: SetPDFMetaDataInputType!) {
       producer
       createdAt
       modifiedAt
-      pages
+      creator
+      documentName
     }
   }
 }

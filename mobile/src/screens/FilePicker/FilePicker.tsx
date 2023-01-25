@@ -45,7 +45,7 @@ const FilePicker: React.FunctionComponent<AppNavProps<"FilePicker">> = ({
   }
   if (service === "meta") {
     return (
-      <Wrapper>
+      <Wrapper withTextInputs>
         <PdfMeta params={route.params} navigation={navigation} />
       </Wrapper>
     );
